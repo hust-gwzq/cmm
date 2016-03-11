@@ -1,0 +1,4 @@
+#!/bin/bash
+rm lex.yy.c
+flex lexical.l
+gcc lex.yy.c -lfl -o scanner
