@@ -1,0 +1,21 @@
+int x = 9;
+float y = 10.3;
+struct
+{
+	int x;
+	float y;
+};
+what fuck
+if (x > 9)
+	return 2;
+else
+	return 3;
+
+while (2 > x)
+{
+
+}
+// ss = 2;
+/* ddd */
+if (y != x)
+	return;
