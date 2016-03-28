@@ -1,5 +1,4 @@
 %{
-#include <stdio.h>
 %}
 int_number				(0|([1-9][0-9]*))
 normal_float_number		([0-9]*\.?[0-9]+|[0-9]+\.)
@@ -42,17 +41,3 @@ while					{ printf("Line %d: WHILE\n", yylineno); /*return WHILE;*/ }
 \n          			{ /*yylineno = yylineno + 1;*/ /*yycolumn = 1;*/ }
 .           			{ printf("Error type A at Line %d: Mysterious characters \'%s\'\n", yylineno, yytext); }
 %%
-int main(int argc, char *argv[])
-{
-	if (argc > 1)
-	{
-		if (!(yyin = fopen(argv[1], "r")))
-		{
-			perror(argv[1]);
-			return 1;
-		}
-	}
-	while (yylex() != 0);
-//	yylex();
-	return 0;
-}
