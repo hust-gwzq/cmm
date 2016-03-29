@@ -1,7 +1,7 @@
 default:
 	flex lexical.l
 	bison -d syntax.y
-	gcc main.c syntax.tab.c -lfl -ly -o parser
+	gcc main.c syntax_tree.c syntax.tab.c -lfl -w -o parser
 lex:
 	flex lexical.l
 syntax:
