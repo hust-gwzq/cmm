@@ -2,6 +2,8 @@
 //#include "syntax.tab.h"
 //#include "syntax_tree.h"
 extern FILE* yyin;
+extern struct YYLTYPE;
+extern YYLTYPE yylloc;
 int yylex();
 int main(int argc, char *argv[])
 {
