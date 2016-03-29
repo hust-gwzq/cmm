@@ -1,11 +1,18 @@
 %{
-#include <stdio.h>
+#include "lex.yy.c"
 %}
 
-/* declared tokens */
-%token INT
-%token ADD SUB MUL DIV
+/* declared types */
+%union
+{
+	int type_int;
+	float type_float;
+	double type_double;
+}
 
+/* declared tokens */
+%token <type_int> INT
+%token <type_float> FLOAT
 %%
 Calc :  /* empty */
   | Exp { printf("= %d\n", $1); }
@@ -21,12 +28,3 @@ Factor : Term
 Term : INT
   ;
 %%
-#include "lex.yy.c"
-int main()
-{
-	yyparse();
-}
-yyerror(char* msg)
-{
-	fprintf(stderr, "error %s\n", msg);
-}

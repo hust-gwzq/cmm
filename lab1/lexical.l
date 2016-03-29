@@ -1,6 +1,15 @@
 %{
+int yycolumn = 1;
+#define YY_USER_ACTION \
+	yylloc.first_line = yylloc.last_line = yylineno; \
+	yylloc.first_column = yycolumn; \
+	yylloc.last_column = yycolumn + yyleng - 1; \
+	yycolumn += yyleng;
+
 %}
 int_number				(0|([1-9][0-9]*))
+oct_int_number			0[0-7]+
+hex_int_number			0[xX][0-9a-fA-F]+
 normal_float_number		([0-9]*\.?[0-9]+|[0-9]+\.)
 exp_float_number		[0-9]+(\.[0-9]+)?([Ee][+-]?[0-9]+)
 id						[a-zA-Z_][a-zA-Z0-9_]*
@@ -18,7 +27,10 @@ while					{ printf("Line %d: WHILE\n", yylineno); /*return WHILE;*/ }
 {type}      			{ printf("Line %d: Type\n", yylineno); /*return TYPE;*/ }
 {id}        			{ printf("Line %d: Identifier: %s\n", yylineno, yytext); /*return ID;*/ }
 {int_number}   			{ printf("Line %d: Integer: %d\n", yylineno, atoi(yytext)); /*return INT;*/ }
+{oct_int_number}		{ printf("Line %d: OctInteger: %d\n", yylineno, atoi(yytext)); /*return INT;*/ }
+{hex_int_number}		{ printf("Line %d: HexInteger: %d\n", yylineno, atoi(yytext)); /*return INT;*/ }
 {normal_float_number}	{ printf("Line %d: Float: %f\n", yylineno, atof(yytext)); /*return FLOAT;*/ }
+{exp_float_number}		{ printf("Line %d: ExpFloat: %f\n", yylineno, atof(yytext)); /*return FLOAT;*/ }
 ";"         			{ printf("Line %d: SEMI\n", yylineno); /*return SEMI;*/ }
 ","         			{ printf("Line %d: COMMA\n", yylineno); /*return COMMA;*/ }
 "="         			{ printf("Line %d: ASSIGNOP\n", yylineno); /*return ASSIGNOP;*/ }
@@ -38,6 +50,6 @@ while					{ printf("Line %d: WHILE\n", yylineno); /*return WHILE;*/ }
 "{"         			{ printf("Line %d: LC\n", yylineno); /*return LC;*/ }
 "}"         			{ printf("Line %d: RC\n", yylineno); /*return RC;*/ }
 {comment1}|{comment2}	{ printf("Line %d: COMMENT\n", yylineno); }
-\n          			{ /*yylineno = yylineno + 1;*/ /*yycolumn = 1;*/ }
+\n          			{ /*yylineno = yylineno + 1;*/ yycolumn = 1; }
 .           			{ printf("Error type A at Line %d: Mysterious characters \'%s\'\n", yylineno, yytext); }
 %%

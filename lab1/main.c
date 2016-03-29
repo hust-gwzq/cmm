@@ -1,7 +1,6 @@
 #include <stdio.h>
 //#include "syntax.tab.h"
 //#include "syntax_tree.h"
-//#include "lex.yy.c"
 extern FILE* yyin;
 int yylex();
 int main(int argc, char *argv[])
