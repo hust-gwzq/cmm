@@ -1,6 +1,6 @@
 %{
-#include "syntax_tree.h"
-#include "syntax.tab.h"
+#include "../include/syntax_tree.h"
+#include "../include/syntax.tab.h"
 int errorA_num = 0;
 int yycolumn = 1;
 #define YY_USER_ACTION \

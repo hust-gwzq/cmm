@@ -1,6 +1,6 @@
 %{
-#include "syntax_tree.h"
-#include "lex.yy.c"
+#include "../include/syntax_tree.h"
+#include "../src/lex.yy.c"
 
 extern struct Node;
 struct Node *root;

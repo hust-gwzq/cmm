@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "syntax_tree.h"
-#include "syntax.tab.h"
+#include "../include/syntax_tree.h"
+#include "../include/syntax.tab.h"
 extern FILE* yyin;
 extern struct YYLTYPE;
 extern YYLTYPE yylloc;

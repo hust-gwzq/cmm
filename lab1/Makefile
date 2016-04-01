@@ -11,7 +11,7 @@ PARSER	= ./bin/parser
 
 all:
 	flex -o $(SRC)/lex.yy.c $(SCRIPT)/lexical.l
-	bison -d $(SCRIPT)/syntax.y
+	bison -d $(SCRIPT)/syntax.y -o $(SCRIPT)/syntax.tab.c
 	mv $(SCRIPT)/syntax.tab.c $(SRC)/syntax.tab.c
 	mv $(SCRIPT)/syntax.tab.h $(INCLUDE)/syntax.tab.h
 # 	use -w for disable some warning.
@@ -20,7 +20,7 @@ lex:
 #	flex lexical.l
 	flex $(SCRIPT)/lexical.l
 syntax:
-	bison -d $(SCRIPT)/syntax.y
+	bison -d $(SCRIPT)/syntax.y -o $(SCRIPT)/syntax.tab.c
 	mv $(SCRIPT)/syntax.tab.c $(SRC)/syntax.tab.c
 	mv $(SCRIPT)/syntax.tab.h $(INCLUDE)/syntax.tab.h
 compile:

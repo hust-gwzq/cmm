@@ -1,4 +1,4 @@
-#include "syntax_tree.h"
+#include "../include/syntax_tree.h"
 #include <stdio.h>
 
 struct Node* create_node(char *name, char *value, bool is_token, uint32_t line_num, uint32_t children_num, ...)
