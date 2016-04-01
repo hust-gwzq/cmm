@@ -4,7 +4,7 @@
 
 extern struct Node;
 struct Node *root;
-int error_num = 0;
+int errorB_num = 0;
 %}
 
 /* declared types */
@@ -57,8 +57,8 @@ ExtDefList : /* empty */{ $$ = create_node("", "", false, @$.first_line, 0); }
 ExtDef : Specifier ExtDecList SEMI { $$ = create_node("", "", false, @$.first_line, 3, $1, $2, $3); }
   | Specifier SEMI { $$ = create_node("ExtDef", "", false, @$.first_line, 2, $1, $2); }
   | Specifier FunDec CompSt { $$ = create_node("ExtDef", "", false, @$.first_line, 3, $1, $2, $3); }
-  | Specifier error { error_num++; }
-  | error SEMI { error_num++; }
+  | Specifier error { errorB_num++; }
+  | error SEMI { errorB_num++; }
 ;
 ExtDecList : VarDec { $$ = create_node("ExtDecList", "", false, @$.first_line, 1, $1); }
   | VarDec COMMA ExtDecList { $$ = create_node("ExtDecList", "", false, @$.first_line, 3, $1, $2, $3); }
@@ -80,11 +80,11 @@ Tag : ID { $$ = create_node("Tag", "", false, @$.first_line, 1, $1); }
 /* Declarators */
 VarDec : ID { $$ = create_node("VarDec", "", false, @$.first_line, 1, $1); }
   | VarDec LB INT RB { $$ = create_node("VarDec", "", false, @$.first_line, 4, $1, $2, $3, $4); }
-  | VarDec LB error RB { error_num++; }
+  | VarDec LB error RB { errorB_num++; }
 ;
 FunDec : ID LP VarList RP { $$ = create_node("FunDec", "", false, @$.first_line, 4, $1, $2, $3, $4); }
   | ID LP RP { $$ = create_node("FunDec", "", false, @$.first_line, 3, $1, $2, $3); }
-  | ID error RP { error_num++; }
+  | ID error RP { errorB_num++; }
 ;
 VarList : ParamDec COMMA VarList { $$ = create_node("VarList", "", false, @$.first_line, 3, $1, $2, $3); }
   | ParamDec { $$ = create_node("VarList", "", false, @$.first_line, 1, $1); }
@@ -104,9 +104,9 @@ Stmt : Exp SEMI { $$ = create_node("Stmt", "", false, @$.first_line, 2, $1, $2);
   | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE { $$ = create_node("Stmt", "", false, @$.first_line, 5, $1, $2, $3, $4, $5); }
   | IF LP Exp RP Stmt ELSE Stmt { $$ = create_node("Stmt", "", false, @$.first_line, 7, $1, $2, $3, $4, $5, $6, $7); }
   | WHILE LP Exp RP Stmt { $$ = create_node("Stmt", "", false, @$.first_line, 5, $1, $2, $3, $4, $5); }
-  | Exp error { error_num++; }
-  | RETURN Exp error { error_num++; }
-  | error SEMI { error_num++; }
+  | Exp error { errorB_num++; }
+  | RETURN Exp error { errorB_num++; }
+  | error SEMI { errorB_num++; }
 ;
 
 /*Local Definitions*/
@@ -141,7 +141,7 @@ Exp : Exp ASSIGNOP Exp { $$ = create_node("Exp", "", false, @$.first_line, 3, $1
   | ID { $$ = create_node("Exp", "", false, @$.first_line, 1, $1); }
   | INT { $$ = create_node("Exp", "", false, @$.first_line, 1, $1); }
   | FLOAT { $$ = create_node("Exp", "", false, @$.first_line, 1, $1); }
-  | Exp LB error RB { error_num++; }
+  | Exp LB error RB { errorB_num++; }
 ;
 Args : Exp COMMA Args { $$ = create_node("Args", "", false, @$.first_line, 3, $1, $2, $3); }
   | Exp { $$ = create_node("Args", "", false, @$.first_line, 1, $1); }

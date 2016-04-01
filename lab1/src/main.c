@@ -6,7 +6,8 @@ extern struct YYLTYPE;
 extern YYLTYPE yylloc;
 extern struct Node;
 extern struct Node* root;
-extern int error_num;
+extern int errorA_num;
+extern int errorB_num;
 int yylex();
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
 		}
 		yyparse();
 		// No error and print syntax tree.
-		if (error_num == 0)
+		if (errorA_num == 0 && errorB_num == 0)
 			print_tree(root, 0);
 	}
 	return 0;

@@ -50,7 +50,20 @@ void print_tree(struct Node *root, int blank_num)
         else if (strcmp(root->name, "TYPE") == 0)
             printf(": %s", root->value);
         else if (strcmp(root->name, "INT") == 0)
-            printf(": %d", atoi(root->value));
+        {
+            // should use strtol() instead of atoi() because of oct and hex.
+            if (root->value[0] == '0')
+            {
+                // hex int
+                if (root->value[1] == 'x' || root->value[1] == 'X')
+                    printf(": %d", strtol(root->value, NULL, 16));
+                else
+                    // oct int
+                    printf(": %d", strtol(root->value, NULL, 8));
+            }
+            else
+                printf(": %d", strtol(root->value, NULL, 10));
+        }
         else if (strcmp(root->name, "FLOAT") == 0)
             printf(": %f", atof(root->value));
 		if (!root->is_token)
