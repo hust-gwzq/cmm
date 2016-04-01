@@ -18,11 +18,10 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		yyparse();
+		// No error and print syntax tree.
+		if (error_num == 0)
+			print_tree(root, 0);
 	}
 	return 0;
 }
 
-yyerror(char *msg)
-{
-	printf("Error type B at Line %d: %s\n", yylloc.first_line, msg);
-}

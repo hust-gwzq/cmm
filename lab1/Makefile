@@ -1,18 +1,17 @@
 default:
 	flex lexical.l
 	bison -d syntax.y
-	gcc main.c syntax_tree.c syntax.tab.c -lfl -w -o parser
+	gcc main.c syntax_tree.c syntax.tab.c -lfl -o parser
 lex:
 	flex lexical.l
 syntax:
 	bison -d syntax.y
 scanner:
-	gcc main.c lex.yy.c -lfl -o scanner
+	clang main.c lex.yy.c -lfl -o scanner
 compile:
-	gcc main.c syntax.tab.c -lfl -ly -o parser
+	clang main.c syntax.tab.c -lfl -o parser
 parse:
 	./parser test.c
 clean:
-	rm lex.yy.c
-	rm scanner
+	rm lex.yy.c syntax.tab.h syntax.tab.c
 	rm parser
