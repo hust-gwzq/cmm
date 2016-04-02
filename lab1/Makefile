@@ -36,6 +36,7 @@ test:
 	$(PARSER)	testcase/test1_8.cmm
 	$(PARSER)	testcase/test1_9.cmm
 	$(PARSER)	testcase/test1_10.cmm
+	$(PARSER)	testcase/test1_11.cmm #My own testcase
 clean:
 	rm $(SRC)/lex.yy.c $(SRC)/syntax.tab.c $(INCLUDE)/syntax.tab.h -f
 	rm $(BIN)/parser -f

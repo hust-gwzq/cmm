@@ -1,0 +1,5 @@
+int main()
+{
+	int 9x = 10;
+	return 0;
+}

@@ -20,9 +20,10 @@ type					int|float
 comment1				(\/\/[^\r\n]*)+
 comment2				"/*"([*]*(([^])+([/])*)*)*"*/"
 
+wrong_id				[0-9]+[a-zA-Z_]+[0-9]*
 wrong_oct				0([0-7]*[8-9]+[0-7]*)+
-wrong_hex				0[xX]([0-9a-fA-F]*[g-zG-Z]+[0-9a-fA-F]*)+
-wrong_exp_float			([0-9]+(.[0-9]+)?([eE][+-]?))|([eE][+-]?[0-9]+)
+wrong_hex				0[Xx]([0-9a-fA-F]*[g-zG-Z]+[0-9a-fA-F]*)+
+wrong_exp_float			([0-9]+(.[0-9]+)?([Ee][+-]?))|([Ee][+-]?[0-9]+)
 
 %option yylineno
 %%
@@ -34,6 +35,7 @@ else					{ /* printf("Line %d: ELSE\n", yylineno); */ yylval.type_node = create_
 while					{ /* printf("Line %d: WHILE\n", yylineno); */ yylval.type_node = create_node("WHILE", yytext, true, yylineno, 0); return WHILE; }
 {type}      			{ /* printf("Line %d: Type\n", yylineno); */ yylval.type_node = create_node("TYPE", yytext, true, yylineno, 0); return TYPE; }
 {id}        			{ /* printf("Line %d: Identifier: %s\n", yylineno, yytext); */ yylval.type_node = create_node("ID", yytext, true, yylineno, 0); return ID; }
+{wrong_id}				{ printf("Error type A at Line %d: Wrong id \'%s\'.\n", yylineno, yytext); yylval.type_node = create_node("ID", yytext, true, yylineno, 0); errorA_num++; return ID; }
 {wrong_oct}				{ printf("Error type A at Line %d: Illegal octal number \'%s\'.\n", yylineno, yytext); yylval.type_node = create_node("INT", yytext, true, yylineno, 0); errorA_num++; return INT; }
 {wrong_hex}				{ printf("Error type A at Line %d: Illegal hexical number \'%s\'.\n", yylineno, yytext); yylval.type_node = create_node("INT", yytext, true, yylineno, 0); errorA_num++; return INT; }
 {wrong_exp_float}		{ printf("Error type A at Line %d: Illegal floating point number \'%s\'.\n", yylineno, yytext); yylval.type_node = create_node("FLOAT", yytext, true, yylineno, 0); errorA_num++; return FLOAT; }

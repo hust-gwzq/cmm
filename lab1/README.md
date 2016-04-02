@@ -6,6 +6,8 @@
     Lab1
     │  Makefile
     │  
+    │  README.md
+    │  
     ├─include
     │      syntax_tree.h
     │      
@@ -28,6 +30,7 @@
             test1_8.cmm
             test1_9.cmm
             test1_10.cmm
+            test1_11.cmm  # My own testcase for illegal id.
 ####How to Compile
 `make` will generate lex.yy.c and syntax.tab.* and compile to `parser`  
 `make test` will run 10 testcases and display the result.
