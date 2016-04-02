@@ -31,6 +31,7 @@
             test1_9.cmm
             test1_10.cmm
             test1_11.cmm  # My own testcase for illegal id.
+            test1_12.cmm  # My own testcase for one of illegal exp float.
 ####How to Compile
 `make` will generate lex.yy.c and syntax.tab.* and compile to `parser`  
-`make test` will run 10 testcases and display the result.
+`make test` will run 12 testcases and display the result.
