@@ -29,5 +29,5 @@
             test1_9.cmm
             test1_10.cmm
 ####How to Compile
-`make` will generate lex.yy.c and syntax.tab.* and compile to `parser`
+`make` will generate lex.yy.c and syntax.tab.* and compile to `parser`  
 `make test` will run 10 testcases and display the result.
