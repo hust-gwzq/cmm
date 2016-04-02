@@ -20,7 +20,7 @@ type					int|float
 comment1				(\/\/[^\r\n]*)+
 comment2				"/*"([*]*(([^])+([/])*)*)*"*/"
 
-wrong_id				[0-9]+[a-zA-Z_]+[0-9]*
+wrong_id				[0-9]+[a-zA-Z_]+{id}*
 wrong_oct				0([0-7]*[8-9]+[0-7]*)+
 wrong_hex				0[Xx]([0-9a-fA-F]*[g-zG-Z]+[0-9a-fA-F]*)+
 wrong_exp_float			([0-9]+(.[0-9]+)?([Ee][+-]?))|([Ee][+-]?[0-9]+)

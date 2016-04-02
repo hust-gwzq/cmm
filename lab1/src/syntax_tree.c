@@ -36,7 +36,7 @@ struct Node* create_node(char *name, char *value, bool is_token, uint32_t line_n
 	return this;
 }
 
-void print_tree(struct Node *root, int blank_num)
+void print_tree(struct Node *root, uint32_t blank_num)
 {
     
 	if (strcmp(root->name, "") != 0)
