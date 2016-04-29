@@ -2,7 +2,7 @@
 #define __SEMANIC_H__
 
 #include "syntax_tree.h"
-#define HASHSIZE 100  // HashTable Size
+#include "hash_table.h"
 
 typedef struct Type_* Type;
 typedef struct FieldList_* FieldList;
