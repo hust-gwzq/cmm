@@ -15,7 +15,7 @@ all:
 	mv $(SCRIPT)/syntax.tab.c $(SRC)/syntax.tab.c
 	mv $(SCRIPT)/syntax.tab.h $(INCLUDE)/syntax.tab.h
 # 	use -w for disable some warning.
-	$(CC) $(SRC)/main.c $(SRC)/syntax_tree.c $(SRC)/syntax.tab.c -lfl -w -o $(BIN)/parser
+	$(CC) $(SRC)/main.c $(SRC)/semanic.c $(SRC)/syntax_tree.c $(SRC)/syntax.tab.c -lfl -w -o $(BIN)/parser
 lex:
 #	flex lexical.l
 	flex $(SCRIPT)/lexical.l

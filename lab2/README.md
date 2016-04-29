@@ -1,9 +1,9 @@
 ##C-- Compiler Programming Assignment
 --------------------------------------------------------------
-###Lab1 Lexical Analysis and Syntax Analysis
+###Lab2 Semanic Analysis
 ####Folder structure
 
-    Lab1
+    Lab2
     │  Makefile
     │  
     │  README.md
@@ -14,10 +14,12 @@
     ├─script
     │      lexical.l
     │      syntax.y
+    │      semanic.h
     │      
     ├─src
     │      main.c
     │      syntax_tree.c
+    |      semanic.c
     │      
     └─testcase
             test1_1.cmm

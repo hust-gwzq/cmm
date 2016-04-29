@@ -1,5 +1,0 @@
-int main()
-{
-	float x = .e9;
-	return 0;
-}

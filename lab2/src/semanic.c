@@ -1,4 +1,4 @@
-#include "../semanic.h"
+#include "../include/semanic.h"
 
 uint32_t hash_pjw(char* name)
 {
