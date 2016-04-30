@@ -26,18 +26,23 @@ syntax:
 compile:
 	$(CC) $(SRC)/main.c $(SRC)/syntax_tree.c $(SRC)/syntax.tab.c -lfl -o $(BIN)/parser
 test:
-	$(PARSER)	testcase/test1_1.cmm
-	$(PARSER)	testcase/test1_2.cmm
-	$(PARSER)	testcase/test1_3.cmm
-	$(PARSER)	testcase/test1_4.cmm
-	$(PARSER)	testcase/test1_5.cmm
-	$(PARSER)	testcase/test1_6.cmm
-	$(PARSER)	testcase/test1_7.cmm
-	$(PARSER)	testcase/test1_8.cmm
-	$(PARSER)	testcase/test1_9.cmm
-	$(PARSER)	testcase/test1_10.cmm
-	$(PARSER)	testcase/test1_11.cmm #My own testcase
-	$(PARSER)	testcase/test1_12.cmm #My own testcase
+	$(PARSER)	testcase/test2_1.cmm
+	$(PARSER)	testcase/test2_2.cmm
+	$(PARSER)	testcase/test2_3.cmm
+	$(PARSER)	testcase/test2_4.cmm
+	$(PARSER)	testcase/test2_5.cmm
+	$(PARSER)	testcase/test2_6.cmm
+	$(PARSER)	testcase/test2_7.cmm
+	$(PARSER)	testcase/test2_8.cmm
+	$(PARSER)	testcase/test2_9.cmm
+	$(PARSER)	testcase/test2_10.cmm
+	$(PARSER)	testcase/test2_11.cmm
+	$(PARSER)	testcase/test2_12.cmm
+	$(PARSER)	testcase/test2_13.cmm
+	$(PARSER)	testcase/test2_14.cmm
+	$(PARSER)	testcase/test2_15.cmm
+	$(PARSER)	testcase/test2_16.cmm
+	$(PARSER)	testcase/test2_17.cmm
 clean:
 	rm $(SRC)/lex.yy.c $(SRC)/syntax.tab.c $(INCLUDE)/syntax.tab.h -f
 	rm $(BIN)/parser -f

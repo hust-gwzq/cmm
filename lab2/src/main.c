@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "../include/syntax_tree.h"
 #include "../include/syntax.tab.h"
+#include "../include/semanic.h"
 extern FILE* yyin;
 extern struct YYLTYPE;
 extern YYLTYPE yylloc;
@@ -21,7 +22,8 @@ int main(int argc, char *argv[])
 		yyparse();
 		// No error and print syntax tree.
 		if (errorA_num == 0 && errorB_num == 0)
-			print_tree(root, 0);
+			//print_tree(root, 0);
+			program(root);
 	}
 	return 0;
 }
