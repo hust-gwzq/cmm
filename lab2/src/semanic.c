@@ -2,7 +2,7 @@
 
 /*int kind in this file:
 	0 = int
-	1 = float
+	1 = fieldlistoat
 	2 = array
 	3 = struct
 	4 = function
@@ -15,18 +15,10 @@
 	11 = basic
 */
 
-typedef struct Type_* Type;
-typedef struct FieldList_* FieldList;
-typedef struct Var_* Var;
-typedef struct Func_* Func;
-typedef struct Args_* Args;
-typedef struct Item_* Item;
-typedef struct ExpReturnType_ ExpReturnType_;
+struct Type_ type_int;
+struct Type_ type_float;
 
-struct Type_ typeInt;
-struct Type_ typeFloat;
-
-Item hashTable[HASHTABLELENGTH];
+Unit hash_table[HASHSIZE];
 
 Type thisReturnType;
 
@@ -36,7 +28,7 @@ uint32_t hash_pjw(char* name)
 	for (; *name; ++name)
 	{
 		val = (val << 2) + *name;
-		if (i = val & ~HASHTABLELENGTH) val = (val ^ (i >> 12)) & HASHTABLELENGTH;
+		if (i = val & ~HASHSIZE) val = (val ^ (i >> 12)) & HASHSIZE;
 	}
 	return val;
 }
@@ -44,30 +36,29 @@ uint32_t hash_pjw(char* name)
 void init_hash_table()
 {
 	int i = 0;
-	for (i = 0; i < HASHTABLELENGTH; i++)
+	for (i = 0; i < HASHSIZE; i++)
 	{
-		hashTable[i] = (Item)malloc(sizeof(struct Item_));
-		hashTable[i]->next = 0;
+		hash_table[i] = (Unit)malloc(sizeof(struct Unit_));
+		hash_table[i]->next = 0;
 	}
 	return 0;
 }
 
-void insert_hash_table(Item item)
+void insert_hash_table(Unit unit)
 {
-	//Insert in the hash table.
-	int index = hash_pjw(item->name);
+	int index = hash_pjw(unit->name);
 
-	Item p = hashTable[index];
-	item->next = p->next;
-	p->next = item;
+	Unit p = hash_table[index];
+	unit->next = p->next;
+	p->next = unit;
 }
 
-int checkIfUsed(char* n)
+int check_hash_table(char* n)
 {
-	//printf("In checkIfUsed\n");
-	//printf("I am checking %s\n", n);
+	//printf("In check_hash_table\n");
+	// printf("I am checking %s\n", n);
 	int index = hash_pjw(n);
-	Item p = hashTable[index];
+	Unit p = hash_table[index];
 	if(p == 0)
 		return -1;
 	while(p != 0)
@@ -80,10 +71,10 @@ int checkIfUsed(char* n)
 		return 0;
 }
 
-Item getFromHashTable(char* n)
+Unit get_unit(char* n)
 {
-	int index = hash_pjw(n);
-	Item p = hashTable[index];
+	uint32_t index = hash_pjw(n);
+	Unit p = hash_table[index];
 	while (p != 0)
 	{
 		if (p->name != 0 && 0 == strcmp(p->name, n) != 0)
@@ -101,12 +92,12 @@ void program(struct Node* node)
 	//printf("In Program\n");
 
 	//Initialization.
-	typeInt.kind = BASIC;
-	typeInt.u.basic = 0;
-	typeFloat.kind = BASIC;
-	typeFloat.u.basic = 1;
+	type_int.kind = BASIC;
+	type_int.u.basic = 0;
+	type_float.kind = BASIC;
+	type_float.u.basic = 1;
 	init_hash_table();
-	//Program -> ExtDefList
+	//Program -> extDefList
 	
 	extDefList(node->children[0]);
 	return;
@@ -114,17 +105,10 @@ void program(struct Node* node)
 
 void extDefList(struct Node* node)
 {
-	//printf("In ExtDefList\n");
-	//ExtDefList -> EMPTY
-	//			  | ExfDef ExtDefList
-
-	if(0 == node->children_num)//EMPTY
-		return;
-	else
+	if (node->children_num != 0)
 	{
 		extDef(node->children[0]);
 		extDefList(node->children[1]);
-		return;
 	}
 }
 
@@ -154,19 +138,18 @@ void extDef(struct Node* node)
   		Func f = funDec(node->children[1]);
 
   		//Insert in the hash table.
-  		Item item = (Item)malloc(sizeof(Item_));
-  		item->name = f->name;//Just a pointer.
-  		item->kind = 4;//Function.
+  		Unit unit = (Unit)malloc(sizeof(Unit_));
+  		unit->name = f->name;//Just a pointer.
+  		unit->kind = 4;//Function.
   		f->returnType = thisType;
-  		item->u.f = f;
+  		unit->u.func = f;
 
-  		insert_hash_table(item);
+  		insert_hash_table(unit);
 
   		thisReturnType = thisType;
 
   		compSt(node->children[2]);
   	}
-  	return;
 }
 
 void extDecList(struct Node* node, Type t)
@@ -178,18 +161,18 @@ void extDecList(struct Node* node, Type t)
   	{
           //printf("name is %s", node->children[0]->name);
   		Var v = varDec(node->children[0]);
-  		if (checkIfUsed(v->name) == 1)
+  		if (check_hash_table(v->name) == 1)
   			printf("Error type 3 at Line %d: Redefined variable \"%s\".\n", node->children[0]->line_num, node->children[0]->name);
   		else
   		{
   			//Insert in the hash table.
-  			Item item = (Item)malloc(sizeof(Item_));
-	  		item->name = v->name;
-	  		item->kind = 6;//Var.
-	  		item->u.v->type = t;
-	  		item->u.v = v;
+  			Unit unit = (Unit)malloc(sizeof(Unit_));
+	  		unit->name = v->name;
+	  		unit->kind = 6;//Var.
+	  		unit->u.var->type = t;
+	  		unit->u.var = v;
 
-	  		insert_hash_table(item);
+	  		insert_hash_table(unit);
   		}
   	}
   	else
@@ -212,15 +195,15 @@ Type specifier(struct Node* node)
   	{
   		if (strcmp(node->children[0]->value, "int") == 0)
   		{
-  			typeInt.kind = BASIC,
-			typeInt.u.basic = 0;
-  			return &typeInt;
+  			type_int.kind = BASIC,
+			type_int.u.basic = 0;
+  			return &type_int;
   		}
   		else
   		{
-  			typeFloat.kind = BASIC,
-			typeFloat.u.basic = 1;
-  			return &typeFloat;
+  			type_float.kind = BASIC,
+			type_float.u.basic = 1;
+  			return &type_float;
   		}
   	}
   	else
@@ -232,42 +215,31 @@ Type specifier(struct Node* node)
 Type structSpecifier(struct Node* node)
 {
 	//printf("In StructSpecifier\n");
-	//StructSpecifier -> STRUCT OptTag LC DefList RC
+	//StructSpecifier -> STRUCT OptTag LC Defieldlistist RC
 	//				   | STRUCT Tag
 	if (node->children_num == 5)
 	{
-		//STRUCT OptTag LC DefList RC
-		Item item = optTag(node->children[1]);
+		//STRUCT OptTag LC Defieldlistist RC
+		Unit unit = optTag(node->children[1]);
 
-		item->u.type->u.structure->tail = defList(node->children[3], 1);
+		unit->u.type->u.structure->tail = defList(node->children[3], 1);
 
-		return item->u.type;
+		return unit->u.type;
 	}
 	else
 	{
 		//STRUCT Tag
-		Item item = getFromHashTable(node->children[1]->children[0]->value);
+		Unit unit = get_unit(node->children[1]->children[0]->value);
 
-
-		//PRINT HASH TABLE
-		/*int i=0;
-		for (i=0;i<HASHTABLELENGTH; i++)
-		{
-			Item it = hashTable[i];
-			while(it != NULL && it->name != NULL)
-				printf("%s          ", it->name);
-			printf("\n");
-		}*/
-
-		if (item == 0)
+		if (unit == 0)
 		{
 			printf("Error type 17 at Line %d: Undefined structure.\n", node->children[1]->line_num);
 				return 0;
 		}
 		else
 		{
-			if (item->kind == 5)
-				return item->u.type;
+			if (unit->kind == 5)
+				return unit->u.type;
 			else
 			{
 				printf("Error type 17 at Line %d: Undefined structure.\n", node->children[1]->line_num);
@@ -277,7 +249,7 @@ Type structSpecifier(struct Node* node)
 	}
 }
 
-Item optTag(struct Node* node)
+Unit optTag(struct Node* node)
 {
 	//printf("In OptTag\n");
 	//OptTag -> EMPTY
@@ -286,39 +258,39 @@ Item optTag(struct Node* node)
   	if (node->children_num == 1)
   	{
   		//ID
-  		if(checkIfUsed(node->children[0]->value) == 1)
+  		if(check_hash_table(node->children[0]->value) == 1)
   			printf("Error type 16 at Line %d: Name is used by other structures \"%s\"\n", node->children[0]->line_num, node->children[0]->value);
 
   		//Insert in the hash table.
-  		FieldList fl = (FieldList)malloc(sizeof(FieldList_));
-  		fl->name = node->children[0]->value;
-  		fl->type = 0;
-  		fl->tail = 0;
+  		FieldList fieldlist = (FieldList)malloc(sizeof(FieldList_));
+  		fieldlist->name = node->children[0]->value;
+  		fieldlist->type = 0;
+  		fieldlist->tail = 0;
   		Type t = (Type)malloc(sizeof(Type_));
   		t->kind = STRUCTURE;
-  		t->u.structure = fl;
-  		Item item = (Item)malloc(sizeof(Item_));
-  		item->name = fl->name;
-  		item->kind = 5;
-  		item->u.type = t;
+  		t->u.structure = fieldlist;
+  		Unit unit = (Unit)malloc(sizeof(Unit_));
+  		unit->name = fieldlist->name;
+  		unit->kind = 5;
+  		unit->u.type = t;
 
-  		insert_hash_table(item);
+  		insert_hash_table(unit);
 
-  		return item;
+  		return unit;
   	}
   	else
   	{
 
-  		FieldList fl = (FieldList)malloc(sizeof(FieldList_));
-  		fl->name = 0;
-  		fl->type->kind = STRUCTURE;
-  		fl->tail = 0;
+  		FieldList fieldlist = (FieldList)malloc(sizeof(FieldList_));
+  		fieldlist->name = 0;
+  		fieldlist->type->kind = STRUCTURE;
+  		fieldlist->tail = 0;
   		Type t = (Type)malloc(sizeof(Type_));
   		t->kind = STRUCTURE;
-  		t->u.structure = fl;
-  		Item item = (Item)malloc(sizeof(Item_));
-  		item->name = item->u.type->u.structure->name;
-  		return item;
+  		t->u.structure = fieldlist;
+  		Unit unit = (Unit)malloc(sizeof(Unit_));
+  		unit->name = unit->u.type->u.structure->name;
+  		return unit;
 
   	}
 }
@@ -327,7 +299,7 @@ void tag(struct Node* node)
 {
 	//printf("In Tag\n");
 	//Tag -> ID
-	if(checkIfUsed(node->children[0]->value) == 1)
+	if(check_hash_table(node->children[0]->value) == 1)
   			printf("Error type Unknown at Line %d:\n", node->children[0]->line_num);
 	return;
 }
@@ -364,7 +336,7 @@ Func funDec(struct Node* node)
 	//printf("In FunDec\n");
 	//FunDec -> ID LP VarList RP
  	//		  | ID LP RP
-	if (checkIfUsed(node->children[0]->value) == 1)//Check ID.
+	if (check_hash_table(node->children[0]->value) == 1)//Check ID.
 		printf("Error type 4 at Line %d: Redefined function \"%s\"\n", node->children[0]->line_num,node->children[0]->value);
 	if (node->children_num == 4)
 	{
@@ -417,19 +389,19 @@ Args paramDec(struct Node* node)
 		tt->u.array.elem = t;
 	}
 
-	if (checkIfUsed(v->name) == 1)
+	if (check_hash_table(v->name) == 1)
 		printf("Error type 3 at Line %d: Redefined variable \"%s\".\n", node->children[1]->line_num, node->children[1]->name);
 
 	//Insert in the hash table.
-	Item item = (Item)malloc(sizeof(Item_));
-	item->name = v->name;
-	item->kind = 6;//var.
-	item->u.v = v;
+	Unit unit = (Unit)malloc(sizeof(Unit_));
+	unit->name = v->name;
+	unit->kind = 6;//var.
+	unit->u.var = v;
 
-	insert_hash_table(item);
+	insert_hash_table(unit);
 
 	Args a = (Args)malloc(sizeof(Args_));
-	a->v = v;
+	a->var = v;
 	a->next = 0;
 	return a;
 }
@@ -438,7 +410,7 @@ Args paramDec(struct Node* node)
 void compSt(struct Node* node)
 {
 	//printf("In CompSt\n");
-	//CompSt -> LC DefList StmtList RC
+	//CompSt -> LC Defieldlistist StmtList RC
 	defList(node->children[1], 0);
 	stmtList(node->children[2]);
 	return;
@@ -491,7 +463,7 @@ void stmt(struct Node* node)
   	{
   		//IF LP Exp RP Stmt ELSE Stmt
   		ExpReturnType_ ert = exp(node->children[2]);
-  		if (ert.kind != 7 && ert.type != &typeInt)
+  		if (ert.kind != 7 && ert.type != &type_int)
   			printf("Error type 7 at Line %d: Mismatched operands\n",node->children[0]->line_num);
 
   		stmt(node->children[4]);
@@ -505,7 +477,7 @@ void stmt(struct Node* node)
   		exp(node->children[2]);
 
   		ExpReturnType_ ert = exp(node->children[2]);
-  		if (ert.kind != 7 && ert.type != &typeInt)
+  		if (ert.kind != 7 && ert.type != &type_int)
   			printf("Error type 7 at Line %d: Mismatched operands\n",node->children[0]->line_num);
   		stmt(node->children[4]);
 
@@ -517,18 +489,18 @@ FieldList defList(struct Node* node, int varOrStruct)
 {
     if (strcmp(node->name, "") ==0)
     return 0;
-	//printf("In DefList\n");
-	//DefList : EMPTY
- 	// 		  | Def DefList
+	//printf("In Defieldlistist\n");
+	//Defieldlistist : EMPTY
+ 	// 		  | Def Defieldlistist
 
  	if (node->children_num == 0)
  	{
- 		//printf("EMPTY in DefList\n");
+ 		//printf("EMPTY in Defieldlistist\n");
  		return 0;
  	}
  	else
  	{
- 		FieldList fl = def(node->children[0], varOrStruct);
+ 		FieldList fieldlist = def(node->children[0], varOrStruct);
 
  		//printf("IDONTKNOW %d\n", varOrStruct);
 
@@ -537,15 +509,15 @@ FieldList defList(struct Node* node, int varOrStruct)
  		else
  		{
 
- 			if (fl != 0)
+ 			if (fieldlist != 0)
  			{
- 				FieldList flfl = fl;
- 				while (flfl->tail != 0)
- 					flfl =flfl->tail;
- 				flfl->tail = defList(node->children[1], varOrStruct);
+ 				FieldList fieldlist = fieldlist;
+ 				while (fieldlist->tail != 0)
+ 					fieldlist =fieldlist->tail;
+ 				fieldlist->tail = defList(node->children[1], varOrStruct);
  			}
  		}
- 		return fl;
+ 		return fieldlist;
  	}
 }
 
@@ -554,9 +526,9 @@ FieldList def(struct Node* node, int varOrStruct)
 	//printf("In Def\n");
 	//Def -> Specifier DecList SEMI
 	Type t = specifier(node->children[0]);
-	FieldList fl = decList(node->children[1], t, varOrStruct);
+	FieldList fieldlist = decList(node->children[1], t, varOrStruct);
 
-	return fl;
+	return fieldlist;
 }
 
 FieldList decList(struct Node* node, Type t, int varOrStruct)
@@ -564,19 +536,19 @@ FieldList decList(struct Node* node, Type t, int varOrStruct)
 	//printf("In DecList\n");
 	//DecList -> Dec
   	//		   | Dec COMMA DecList
-  	FieldList fl =dec(node->children[0], 0, varOrStruct);
+  	FieldList fieldlist =dec(node->children[0], 0, varOrStruct);
   	if (node->children_num == 1)
-
- 		return fl;
+ 		return fieldlist;
+         
  	else
  	{
  		if (varOrStruct == 1)
- 			fl->tail = decList(node->children[2], t, varOrStruct);
+ 			fieldlist->tail = decList(node->children[2], t, varOrStruct);
  		else
  		{
  			decList(node->children[2], t, varOrStruct);
  		}
- 		return fl;
+ 		return fieldlist;
  	}
 }
 
@@ -587,7 +559,7 @@ FieldList dec(struct Node* node, Type t, int varOrStruct)
  	// 	   | VarDec ASSIGNOP Exp
 
  	Var v = varDec(node->children[0]);
- 	if (checkIfUsed(v->name) == 1)
+ 	if (check_hash_table(v->name) == 1)
  	{
  		if (varOrStruct == 1)
  			printf("Error type 15 at Line %d: Redefined field in the struct.\n", node->children[0]->line_num);
@@ -599,32 +571,32 @@ FieldList dec(struct Node* node, Type t, int varOrStruct)
 
  	v->type = t;
 
- 	FieldList fl = 0;
+ 	FieldList fieldlist = 0;
 
  	if (varOrStruct == 1)
  	{
  		//Insert in the hash table.
- 		fl = (FieldList)malloc(sizeof(FieldList_));
- 		fl->name = v->name;
- 		fl->type = v->type;
- 		fl->tail = 0;
+ 		fieldlist = (FieldList)malloc(sizeof(FieldList_));
+ 		fieldlist->name = v->name;
+ 		fieldlist->type = v->type;
+ 		fieldlist->tail = 0;
 
- 		Item item = (Item)malloc(sizeof(Item_));
- 		item->name = fl->name;
- 		item->kind = 9;
- 		item->u.fl = fl;
+ 		Unit unit = (Unit)malloc(sizeof(Unit_));
+ 		unit->name = fieldlist->name;
+ 		unit->kind = 9;
+ 		unit->u.fieldlist = fieldlist;
 
- 		insert_hash_table(item);
+ 		insert_hash_table(unit);
  	}
  	else
  	{
  		//Insert in the hash table.
- 		Item item = (Item)malloc(sizeof(Item_));
- 		item->name = v->name;
- 		item->kind = 6;
- 		item->u.v = v;
+ 		Unit unit = (Unit)malloc(sizeof(Unit_));
+ 		unit->name = v->name;
+ 		unit->kind = 6;
+ 		unit->u.var = v;
 
- 		insert_hash_table(item);
+ 		insert_hash_table(unit);
  	}
 
  	if (node->children_num == 3)
@@ -638,7 +610,7 @@ FieldList dec(struct Node* node, Type t, int varOrStruct)
   		}
  	}
 
- 	return fl;
+ 	return fieldlist;
 }
 
 ExpReturnType_ exp(struct Node* node)
@@ -661,7 +633,7 @@ ExpReturnType_ exp(struct Node* node)
   	//	  	| Exp DOT ID
   	//	  	| ID
   	//	  	| INT
-  	//	  	| FLOAT
+  	//	  	| fieldlistOAT
 
   	ExpReturnType_ ert;
 
@@ -735,7 +707,7 @@ ExpReturnType_ exp(struct Node* node)
 			else if ((ert1.flag <= 1 && ert2.flag <= 1) && (ert1.kind == ert2.kind))
 			{
 				ert.kind = 10;
-				ert.type = &typeInt;
+				ert.type = &type_int;
 				ert.flag = ert1.flag;
 			}
 			else
@@ -755,7 +727,7 @@ ExpReturnType_ exp(struct Node* node)
 
 			if (ert1.kind == 7 || ert2.kind == 7)
 				ert.kind = 7;
-			else if (ert1.flag == 2 && ert2.type == &typeInt)
+			else if (ert1.flag == 2 && ert2.type == &type_int)
 			{
 				//Array
 				ert.kind = ert1.kind;
@@ -763,9 +735,9 @@ ExpReturnType_ exp(struct Node* node)
 
 				if (ert.type == 0)
 					ert.flag = -1;
-				else if (ert.type  == &typeInt)
+				else if (ert.type  == &type_int)
 					ert.flag = 0;
-				else if (ert.type  == &typeFloat)
+				else if (ert.type  == &type_float)
 					ert.flag = 1;
 				else if (ert.type->kind == ARRAY)
 					ert.flag = 2;
@@ -781,7 +753,7 @@ ExpReturnType_ exp(struct Node* node)
 				if (ert1.flag != 2)
 					printf("Error type 10 at Line %d: Not an array.\n", node->children[1]->line_num);
 
-				if (ert2.type != &typeInt)
+				if (ert2.type != &type_int)
 					printf("Error type 12 at Line %d: Not an int.\n", node->children[1]->line_num);
 			}
 			return ert;
@@ -796,17 +768,17 @@ ExpReturnType_ exp(struct Node* node)
 			else if (ert1.flag == 3)
 			{
 				//printf("why i'm here\n");
-				FieldList fl = ert1.type->u.structure->tail;
-				while (fl != 0)
+				FieldList fieldlist = ert1.type->u.structure->tail;
+				while (fieldlist != 0)
 				{
-					if (strcmp(fl->name, node->children[2]->name) == 0)
+					if (strcmp(fieldlist->name, node->children[2]->name) == 0)
 					{
-						ert1.type = fl->type;
+						ert1.type = fieldlist->type;
 						if (ert1.type == 0)
 							ert1.flag = -1;
-						else if (ert1.type  == &typeInt)
+						else if (ert1.type  == &type_int)
 							ert1.flag = 0;
-						else if (ert1.type  == &typeFloat)
+						else if (ert1.type  == &type_float)
 							ert1.flag = 1;
 						else if (ert1.type->kind == ARRAY)
 							ert1.flag = 2;
@@ -816,10 +788,10 @@ ExpReturnType_ exp(struct Node* node)
 						}
 						break;
 					}
-					fl = fl->tail;
+					fieldlist = fieldlist->tail;
 				}
 
-				if (fl == 0)
+				if (fieldlist == 0)
 				{
 					ert1.kind = 7;
 					printf("Error type 14 at Line %d: Non-existent field\n", node->children[1]);
@@ -856,25 +828,25 @@ ExpReturnType_ exp(struct Node* node)
 	else if (strcmp(node->children[0]->name, "ID") == 0)
 	{
 		//printf("In first is ID\n");
-		Item item = getFromHashTable(node->children[0]->value);
-		if (item == 0)
+		Unit unit = get_unit(node->children[0]->value);
+		if (unit == 0)
 			ert.kind = 7;
 		else
 		{
-			ert.kind = item->kind;
-			switch (item->kind)
+			ert.kind = unit->kind;
+			switch (unit->kind)
 			{
-				case 6: ert.type = item->u.v->type; break;//var
-				case 4: ert.type = item->u.f->returnType; break;//function
+				case 6: ert.type = unit->u.var->type; break;//var
+				case 4: ert.type = unit->u.func->returnType; break;//function
 				case 9: ert.type = 0; break;
 			}
 
 			//printf("ok\n");
 			if (ert.type == 0)
 				ert.flag = -1;
-			else if (ert.type  == &typeInt)
+			else if (ert.type  == &type_int)
 				ert.flag = 0;
-			else if (ert.type  == &typeFloat)
+			else if (ert.type  == &type_float)
 				ert.flag = 1;
 			else if (ert.type->kind == ARRAY)
 				ert.flag = 2;
@@ -882,16 +854,13 @@ ExpReturnType_ exp(struct Node* node)
 			{
 				ert.flag = 3;
 			}
-
-
-
 		}
 
 
 		if (node->children_num == 1)
 		{
 			//ID
-			if (item == 0)
+			if (unit == 0)
 				printf("Error type 1 at Line %d: Undefined variable \"%s\".\n", node->children[0]->line_num, node->children[0]->value);
 
 			return ert;
@@ -900,22 +869,22 @@ ExpReturnType_ exp(struct Node* node)
 		{
 			//ID LP RP
 			//ID LP Args RP
-			if (item == 0)
+			if (unit == 0)
 			{
 				printf("Error type 2 at Line %d: Undefined function \"%s\".\n", node->children[0]->line_num, node->children[0]->value);
 				return ert;
 			}
-			if (item->kind != 4) {
-				printf("Error type 11 at Line %d: \"%s\" is not a function\n", node->children[0]->line_num, item->name);
+			if (unit->kind != 4) {
+				printf("Error type 11 at Line %d: \"%s\" is not a function\n", node->children[0]->line_num, unit->name);
 				ert.kind = 7;
 				return ert;
 			}
 			ert.kind = 10;
-			ert.type = item->u.f->returnType;
+			ert.type = unit->u.func->returnType;
 
 
 
-			Args a = item->u.f->args;
+			Args a = unit->u.func->args;
 			if (node->children_num == 4)
 			{	//ID LP Args RP
 				if (args(node->children[2], a) == 0)
@@ -927,20 +896,20 @@ ExpReturnType_ exp(struct Node* node)
 	}
 	else if (strcmp(node->children[0]->name, "INT") == 0)
 	{
-		ert.type = &typeInt;
+		ert.type = &type_int;
 		ert.flag = 0;
 		return ert;
 	}
 	else
 	{
-		ert.type = &typeFloat;
+		ert.type = &type_float;
 		ert.flag = 1;
 		return ert;
 	}
 
 }
 
-int args(struct Node* node, Args a)
+int args(struct Node* node, Args arg)
 {
 	//printf("In Args\n");
 	//Args -> Exp COMMA Args
@@ -951,7 +920,7 @@ int args(struct Node* node, Args a)
   	{
   		if (ert.kind == 7)
   			return 0;
-  		else if (a == 0 || ert.type == a->v->type)
+  		else if (arg == 0 || ert.type == arg->var->type)
   		{
   			printf("Error type 9 at Line %d: Different arguments to function.\n", node->children[0]->line_num);
   			return 0;
@@ -964,7 +933,6 @@ int args(struct Node* node, Args a)
   	}
   	else
   	{
-
-  		return args(node->children[2], a->next);
+  		return args(node->children[2], arg->next);
   	}
 }
