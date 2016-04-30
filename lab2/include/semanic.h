@@ -2,7 +2,7 @@
 #define __SEMANIC_H__
 
 #include "syntax_tree.h"
-#define HASHSIZE 15
+#define HASHSIZE 0x3fff
 
 // #define INT 0
 // #define FLOAT 1
@@ -70,6 +70,7 @@ struct Func_
 	Args args;
 };
 
+// hash table unit
 struct Unit_
 {
 	char* name;
@@ -91,19 +92,14 @@ struct ExpReturnType_
 	int flag;
 };
 
-
+// hash table
 unsigned int hash_pjw(char* name);
-
 void init_hash_table();
-
 void insert_hash_table(Unit unit);
-
 int check_hash_table(char* name);
-
 Unit get_unit(char* name);
 
-
-//Function.
+// semanic analysis
 void program(struct Node* node);
 void extDefList(struct Node* node);
 void extDef(struct Node* node);

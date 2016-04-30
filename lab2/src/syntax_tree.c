@@ -72,7 +72,7 @@ void print_tree(struct Node *root, uint32_t blank_num)
 			printf("\n");
 	}
 
-	uint32_t i = 0;
+	uint32_t i;
 	for (i = 0; i < root->children_num; ++i)
 	{
 		if (root->children[i] != NULL)
