@@ -35,61 +35,66 @@ typedef ExpReturnType_* ExpReturnType;
 
 struct Type_
 {
-	enum { BASIC, ARRAY, STRUCTURE } kind;
-	union
-	{
-		int basic;
-		struct { Type elem; int size; } array;
-		FieldList structure;
-	} u;
+    enum { BASIC, ARRAY, STRUCTURE } kind;
+    union
+    {
+        int basic;
+        struct
+        {
+            Type elem;
+            int size;
+        } array;
+        FieldList structure;
+    } u;
 };
 
 struct FieldList_
 {
-	char* name;
-	Type type;
-	FieldList tail;
+    char* name;
+    Type type;
+    FieldList tail;
 };
 
 struct Var_
 {
-	char* name;
-	Type type;
+    char* name;
+    Type type;
 };
 
 struct Args_
 {
-	Var var;
-	Args next;
+    Var var;
+    Args next;  // ptr to next arg
 };
 
 struct Func_
 {
-	char* name;
-	Type returnType;
-	Args args;
+    char* name;
+    Args args;
+    Type return_type;  // return type
+
+};
+
+struct ExpReturnType_
+{
+    int kind;
+    Type type;
+    int flag;
 };
 
 // hash table unit
 struct Unit_
 {
-	char* name;
-	int kind;
-	union
-	{
-		Var var;
-		Func func;
-		FieldList fieldlist;
-		Type type;
-	} u;
-	Unit next;
-};
-
-struct ExpReturnType_
-{
-	int kind;
-	Type type;
-	int flag;
+    char* name;
+    int kind;
+    union
+    {
+        Var var;
+        Func func;
+        FieldList fieldlist;
+        Type type;
+    } u;
+    Unit next;
 };
 
 // hash table
@@ -104,26 +109,21 @@ void program(struct Node* node);
 void extDefList(struct Node* node);
 void extDef(struct Node* node);
 void extDecList(struct Node* node, Type type);
-
 Type specifier(struct Node* node);
 Type structSpecifier(struct Node* node);
 Unit optTag(struct Node* node);
 void tag(struct Node* node);
-
 Var varDec(struct Node* node);
 Func funDec(struct Node* node);
 Args varList(struct Node* node);
 Args paramDec(struct Node* node);
-
 void compSt(struct Node* node);
 void stmtList(struct Node* node);
 void stmt(struct Node* node);
-
 FieldList defList(struct Node* node, int);
 FieldList def(struct Node* node, int);
 FieldList decList(struct Node*, Type type, int);
 FieldList dec(struct Node*, Type type, int);
-
 ExpReturnType_ exp(struct Node* node);
 int args(struct Node* node, Args arg);
 

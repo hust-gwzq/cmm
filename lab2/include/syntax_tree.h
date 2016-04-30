@@ -12,12 +12,12 @@ extern int errorA_num;
 
 struct Node
 {
-	char *name;
-	char *value;
-	uint32_t line_num;
-	uint32_t children_num;
-	bool is_token;
-	struct Node **children;
+    char *name;
+    char *value;
+    uint32_t line_num;
+    uint32_t children_num;
+    bool is_token;
+    struct Node **children;
 };
 
 typedef struct Node Node;
