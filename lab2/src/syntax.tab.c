@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -139,7 +139,7 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
 #line 12 "./script/syntax.y" /* yacc.c:355  */
@@ -151,6 +151,8 @@ union YYSTYPE
 
 #line 153 "./script/syntax.tab.c" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -178,7 +180,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 182 "./script/syntax.tab.c" /* yacc.c:358  */
+#line 184 "./script/syntax.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1465,401 +1467,401 @@ yyreduce:
         case 2:
 #line 52 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Program", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); root = (yyval.type_node); }
-#line 1469 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1471 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 54 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("", "", false, (yyloc).first_line, 0); }
-#line 1475 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1477 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
 #line 55 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ExtDefList", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1481 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1483 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 57 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1487 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1489 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
 #line 58 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ExtDef", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1493 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1495 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
 #line 59 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ExtDef", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1499 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1501 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
 #line 60 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1505 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1507 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
 #line 61 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1511 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1513 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 63 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ExtDecList", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1517 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1519 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
 #line 64 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ExtDecList", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1523 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1525 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
 #line 68 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Specifier", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1529 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1531 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 69 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Specifier", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1535 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1537 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
 #line 71 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("StructSpecifier", "", false, (yyloc).first_line, 5, (yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1541 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1543 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
 #line 72 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("StructSpecifier", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1547 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1549 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
 #line 74 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("", "", false, (yyloc).first_line, 0); }
-#line 1553 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1555 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
 #line 75 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("OptTag", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1559 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1561 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
 #line 77 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Tag", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1565 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1567 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
 #line 81 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("VarDec", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1571 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1573 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
 #line 82 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("VarDec", "", false, (yyloc).first_line, 4, (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1577 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1579 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
 #line 83 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1583 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1585 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
 #line 85 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("FunDec", "", false, (yyloc).first_line, 4, (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1589 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1591 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 86 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("FunDec", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1595 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1597 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 87 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1601 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1603 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
 #line 89 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("VarList", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1607 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1609 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
 #line 90 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("VarList", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1613 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1615 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
 #line 92 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("ParamDec", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1619 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1621 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
 #line 96 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("CompSt", "", false, (yyloc).first_line, 4, (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1625 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1627 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
 #line 98 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("", "", false, (yyloc).first_line, 0); }
-#line 1631 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1633 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
 #line 99 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("StmtList", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1637 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1639 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
 #line 101 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1643 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1645 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 102 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1649 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1651 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 103 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1655 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1657 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 104 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 5, (yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1661 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1663 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
 #line 105 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 7, (yyvsp[-6].type_node), (yyvsp[-5].type_node), (yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1667 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1669 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
 #line 106 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Stmt", "", false, (yyloc).first_line, 5, (yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1673 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1675 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
 #line 107 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1679 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1681 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
 #line 108 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1685 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1687 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
 #line 109 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1691 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1693 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
 #line 113 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("", "", false, (yyloc).first_line, 0); }
-#line 1697 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1699 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
 #line 114 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("DefList", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1703 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1705 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
 #line 116 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Def", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1709 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1711 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
 #line 118 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("DecList", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1715 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1717 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
 #line 119 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("DecList", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1721 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1723 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
 #line 121 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Dec", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1727 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1729 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
 #line 122 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Dec", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1733 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1735 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
 #line 126 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1739 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1741 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
 #line 127 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1745 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1747 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
 #line 128 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1751 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1753 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
 #line 129 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1757 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1759 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
 #line 130 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1763 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1765 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
 #line 131 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1769 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1771 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
 #line 132 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1775 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1777 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
 #line 133 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1781 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1783 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
 #line 134 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1787 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1789 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
 #line 135 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1793 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1795 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
 #line 136 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 2, (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1799 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1801 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
 #line 137 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 4, (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1805 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1807 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
 #line 138 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1811 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1813 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 139 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 4, (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1817 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1819 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
 #line 140 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1823 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1825 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
 #line 141 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1829 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1831 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
 #line 142 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1835 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1837 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
 #line 143 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Exp", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1841 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1843 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
 #line 144 "./script/syntax.y" /* yacc.c:1646  */
     { errorB_num++; }
-#line 1847 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1849 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
 #line 146 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Args", "", false, (yyloc).first_line, 3, (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)); }
-#line 1853 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1855 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
 #line 147 "./script/syntax.y" /* yacc.c:1646  */
     { (yyval.type_node) = create_node("Args", "", false, (yyloc).first_line, 1, (yyvsp[0].type_node)); }
-#line 1859 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1861 "./script/syntax.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1863 "./script/syntax.tab.c" /* yacc.c:1646  */
+#line 1865 "./script/syntax.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

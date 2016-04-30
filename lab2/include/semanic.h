@@ -9,7 +9,7 @@ typedef struct FieldList_* FieldList;
 typedef struct Var_* Var;
 typedef struct Args_* Args;
 typedef struct Func_* Func;
-typedef struct Item_* Item;
+typedef struct Unit_* Unit;
 typedef struct ExpReturnType_* ExpReturnType;
 
 struct Type_
@@ -42,13 +42,35 @@ struct Args_
     Args next;
 };
 
-struct Func
+struct Func_
 {
     char* name;
     Type return_value;
     Args args;
 };
 
+struct Unit_
+{
+    char* name;
+    int kind;
+    union
+    {
+        Type type;
+        Var var;
+        Func func;
+        FieldList field_list;
+    } u;
+    Unit next;
+};
+
+struct ExpReturnType_
+{
+    int kind;
+    Type type;
+    int flag;    
+};
+
 uint32_t hash_pjw(char* name);
+
 
 #endif
