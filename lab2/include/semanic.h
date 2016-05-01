@@ -113,7 +113,6 @@ void ExtDecList(struct Node* node, Type type);
 Type Specifier(struct Node* node);
 Type StructSpecifier(struct Node* node);
 Unit OptTag(struct Node* node);
-void Tag(struct Node* node);
 Var VarDec(struct Node* node);
 Func FunDec(struct Node* node);
 int args(struct Node* node, Args arg);

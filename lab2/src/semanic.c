@@ -1,12 +1,25 @@
 #include "../include/semanic.h"
 
-
-struct Type_ type_int;
-struct Type_ type_float;
-
+// hash table
 Unit hash_table[HASHSIZE];
 
+// type int
+struct Type_ type_int;
+// type float
+struct Type_ type_float;
+
 Type this = NULL;
+
+void init()
+{
+    init_hash_table();
+    
+    type_int.kind = BASIC;
+    type_int.u.basic = TYPE_INT;
+    
+    type_float.kind = BASIC;
+    type_float.u.basic = TYPE_FLOAT;
+}
 
 uint32_t hash_pjw(char* name)
 {
@@ -29,6 +42,7 @@ void init_hash_table()
     }
 }
 
+// linked list with hash table
 void insert_hash_table(Unit unit)
 {
     uint32_t index = hash_pjw(unit->name);
@@ -38,6 +52,10 @@ void insert_hash_table(Unit unit)
     temp->next = unit;
 }
 
+// return value -1, 0, 1
+// -1 for not exist
+// 1 for exist
+// NULL for not find in the hash linked list.
 int check_hash_table(char* name)
 {
     uint32_t index = hash_pjw(name);
@@ -50,8 +68,8 @@ int check_hash_table(char* name)
             return 1;
         p = p->next;
     }
-    if (p == NULL)
-        return NULL;
+    // not find in the linked list.
+    return NULL;
 }
 
 Unit get_unit(char* name)
@@ -67,15 +85,11 @@ Unit get_unit(char* name)
     return NULL;
 }
 
+// top program function
 void Program(struct Node* node)
 {
     // initialize hash table
-    init_hash_table();
-    
-    type_int.kind = BASIC;
-    type_int.u.basic = TYPE_INT;
-    type_float.kind = BASIC;
-    type_float.u.basic = TYPE_FLOAT;
+    init();
     
     ExtDefList(node->children[0]);
 }
@@ -251,13 +265,6 @@ Unit OptTag(struct Node* node)
     }
 }
 
-void Tag(struct Node* node)
-{
-    if (check_hash_table(node->children[0]->value) == 1)
-        printf("Error type Unknown at Line %d:\n", node->children[0]->line_num);
-    return;
-}
-
 Var VarDec(struct Node* node)
 {
     if (node->children_num == 1)
@@ -367,10 +374,10 @@ Args ParamDec(struct Node* node)
 
     insert_hash_table(unit);
 
-    Args a = (Args)malloc(sizeof(Args_));
-    a->var = var;
-    a->next = NULL;
-    return a;
+    Args arg = (Args)malloc(sizeof(Args_));
+    arg->var = var;
+    arg->next = NULL;
+    return arg;
 }
 
 void CompSt(struct Node* node)
@@ -557,8 +564,6 @@ ReturnType_ Exp(struct Node* node)
         // printf("flag is %d\n", returntype1.flag);
         if (strcmp(node->children[1]->name, "ASSIGNOP") == 0)
         {
-            //printf("In assignop\n");
-            //Exp ASSIGNOP Exp
             if (returntype1.kind != TYPE_ERROR && returntype1.kind != TYPE_VAR)
             {
                 printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n", node->children[0]->line_num);
@@ -689,6 +694,8 @@ ReturnType_ Exp(struct Node* node)
             // int x = check_hash_table(temp->value);
             // printf("x: %d\n", x);
             // Unit unit = get_unit(temp->value);
+            // int x = unit->u.type->u.basic;
+            // printf("x :%d\n", x);
             // printf("name: %s\n", unit->name);
             // printf("kind: %d\n", unit->u.type);
             // printf("returntype: %d\n", returntype1.type);
@@ -704,7 +711,7 @@ ReturnType_ Exp(struct Node* node)
             
             if (returntype1.kind == TYPE_ERROR)
                 return returntype1;
-           printf("%s\n", node->children[2]->value);
+        //    printf("%s\n", node->children[2]->value);
             // else if (returntype1.flag == 3)
             {
                 // printf("%d\n", returntype1.flag);
@@ -785,10 +792,10 @@ ReturnType_ Exp(struct Node* node)
             {
                 case TYPE_FUNCTION:
                     returntype.type = unit->u.func->return_type;
-                    break;//function
+                    break;
                 case TYPE_VAR:
                     returntype.type = unit->u.var->type;
-                    break;//var
+                    break;
                 case TYPE_FIELDLIST:
                     returntype.type = 0;
                     break;
@@ -808,21 +815,22 @@ ReturnType_ Exp(struct Node* node)
             }
         }
 
-
         if (node->children_num == 1)
         {
-            if (unit == 0)
+            // the unit is not in the hash table
+            if (unit == NULL)
                 printf("Error type 1 at Line %d: Undefined variable \"%s\".\n", node->children[0]->line_num, node->children[0]->value);
 
             return returntype;
         }
         else
         {
-            if (unit == 0)
+            if (unit == NULL)
             {
                 printf("Error type 2 at Line %d: Undefined function \"%s\".\n", node->children[0]->line_num, node->children[0]->value);
                 return returntype;
             }
+            // unit is not function.
             if (unit->kind != TYPE_FUNCTION)
             {
                 printf("Error type 11 at Line %d: \"%s\" is not a function.\n", node->children[0]->line_num, unit->name);
@@ -842,13 +850,15 @@ ReturnType_ Exp(struct Node* node)
 
         }
     }
+    // INT
     else if (strcmp(node->children[0]->name, "INT") == 0)
     {
         returntype.type = &type_int;
         returntype.flag = 0;
         return returntype;
     }
-    else
+    // FLOAT
+    else if (strcmp(node->children[0]->name, "FLOAT") == 0)
     {
         returntype.type = &type_float;
         returntype.flag = 1;
