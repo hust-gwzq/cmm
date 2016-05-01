@@ -14,10 +14,10 @@ Type this = NULL;
 void init()
 {
     init_hash_table();
-    
+
     type_int.kind = BASIC;
     type_int.u.basic = TYPE_INT;
-    
+
     type_float.kind = BASIC;
     type_float.u.basic = TYPE_FLOAT;
 }
@@ -91,7 +91,7 @@ void Program(struct Node* node)
 {
     // initialize hash table
     init();
-    
+
     ExtDefList(node->children[0]);
 }
 
@@ -215,7 +215,7 @@ Type StructSpecifier(struct Node* node)
                 // printf("%d", unit->u.type->kind);
                 return unit->u.type;
             }
-                
+
             else
             {
                 printf("Error type 17 at Line %d: Undefined structure \"%s\".\n", node->children[1]->line_num), node->children[1]->children[0]->value;
@@ -561,14 +561,14 @@ FieldList Dec(struct Node* node, Type type, bool is_val)
 ReturnType_ Exp(struct Node* node)
 {
     // print_tree(node, 0);
-    
+
     ReturnType_ returntype;
 
     if (strcmp(node->children[0]->name, "Exp") == 0)
     {
         // printf("In the first is Exp\n");
         ReturnType_ returntype1 = Exp(node->children[0]);
-        
+
         // printf("flag is %d\n", returntype1.flag);
         if (strcmp(node->children[1]->name, "ASSIGNOP") == 0)
         {
@@ -619,7 +619,7 @@ ReturnType_ Exp(struct Node* node)
             }
             return returntype;
         }
-        
+
         // operator
         else if ((strcmp(node->children[1]->name, "RELOP") == 0) ||
                  (strcmp(node->children[1]->name, "PLUS") == 0)  ||
@@ -693,7 +693,7 @@ ReturnType_ Exp(struct Node* node)
             //Exp DOT ID
             // print_tree(node, 0);
             // struct Node* temp = node;
-            
+
             // while (strcmp(temp->name, "ID") != 0)
             // {
             //     temp = temp->children[0];
@@ -713,54 +713,51 @@ ReturnType_ Exp(struct Node* node)
             //     printf("NULL");
             // printf("kind: %s\n", unit->u.var->type->kind);
             // printf("union: %s\n", unit->u.fieldlist->type->kind);
-            
+
             // printf("%s\n", unit->u.type->kind);
-            
+
             //printf("unit: %d\n", unit->u.type->u.basic);
-            
+
             if (returntype1.kind == TYPE_ERROR)
                 return returntype1;
-        //    printf("%s\n", node->children[2]->value);
-            // else if (returntype1.flag == 3)
+            //    printf("%s\n", node->children[2]->value);
+            // printf("%d\n", returntype1.flag);
+            FieldList fieldlist = NULL;
+            if (returntype1.type != NULL)
+                fieldlist = returntype1.type->u.structure->tail;
+            // if (fieldlist != NULL)
+            // printf("Here");
+            while (fieldlist != 0)
             {
-                // printf("%d\n", returntype1.flag);
-                FieldList fieldlist = NULL;
-                if (returntype1.type != NULL)
-                    fieldlist = returntype1.type->u.structure->tail;
-                // if (fieldlist != NULL)
-                    // printf("Here");
-                while (fieldlist != 0)
+                // printf("%s", fieldlist->name);
+                // printf("%s\n", node->children[2]->name);
+                if (strcmp(fieldlist->name, node->children[2]->name) == 0)
                 {
-                    // printf("%s", fieldlist->name);
-                    // printf("%s\n", node->children[2]->name);
-                    if (strcmp(fieldlist->name, node->children[2]->name) == 0)
+                    returntype1.type = fieldlist->type;
+                    if (returntype1.type == 0)
+                        returntype1.flag = -1;
+                    else if (returntype1.type  == &type_int)
+                        returntype1.flag = 0;
+                    else if (returntype1.type  == &type_float)
+                        returntype1.flag = 1;
+                    else if (returntype1.type->kind == ARRAY)
+                        returntype1.flag = 2;
+                    else
                     {
-                        returntype1.type = fieldlist->type;
-                        if (returntype1.type == 0)
-                            returntype1.flag = -1;
-                        else if (returntype1.type  == &type_int)
-                            returntype1.flag = 0;
-                        else if (returntype1.type  == &type_float)
-                            returntype1.flag = 1;
-                        else if (returntype1.type->kind == ARRAY)
-                            returntype1.flag = 2;
-                        else
-                        {
-                            returntype1.flag = 3;
-                        }
-                        break;
+                        returntype1.flag = 3;
                     }
-                    fieldlist = fieldlist->tail;
+                    break;
                 }
-
-                if (fieldlist == NULL && returntype1.flag == 3)
-                {
-                    returntype1.kind = TYPE_ERROR;
-                    printf("Error type 14 at Line %d: Non-existent field.\n", node->children[1]->line_num);
-                    return returntype1;
-                }
+                fieldlist = fieldlist->tail;
             }
-            
+            // TODO: fix error type 14.
+            if (fieldlist == NULL && returntype1.flag == 3)
+            {
+                returntype1.kind = TYPE_ERROR;
+                printf("Error type 14 at Line %d: Non-existent field.\n", node->children[1]->line_num);
+                return returntype1;
+            }
+
             if (returntype1.flag == -1)
             {
                 // printf("flag: %d\n", returntype1.flag);
@@ -768,8 +765,6 @@ ReturnType_ Exp(struct Node* node)
                 printf("Error type 13 at Line %d: Illegal use of \'.\'.\n", node->children[1]->line_num);
                 return returntype1;
             }
-
-            // return returntype1;
         }
 
     }
@@ -799,15 +794,15 @@ ReturnType_ Exp(struct Node* node)
             returntype.kind = unit->kind;
             switch (unit->kind)
             {
-                case TYPE_FUNCTION:
-                    returntype.type = unit->u.func->return_type;
-                    break;
-                case TYPE_VAR:
-                    returntype.type = unit->u.var->type;
-                    break;
-                case TYPE_FIELDLIST:
-                    returntype.type = 0;
-                    break;
+            case TYPE_FUNCTION:
+                returntype.type = unit->u.func->return_type;
+                break;
+            case TYPE_VAR:
+                returntype.type = unit->u.var->type;
+                break;
+            case TYPE_FIELDLIST:
+                returntype.type = 0;
+                break;
             }
 
             if (returntype.type == 0)
