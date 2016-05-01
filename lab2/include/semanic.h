@@ -100,7 +100,7 @@ struct Unit_
 };
 
 // hash table
-unsigned int hash_pjw(char* name);
+uint32_t hash_pjw(char* name);
 void init_hash_table();
 void insert_hash_table(Unit unit);
 int check_hash_table(char* name);

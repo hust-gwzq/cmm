@@ -10,6 +10,7 @@ struct Type_ type_float;
 
 Type this = NULL;
 
+// init hash table and type.
 void init()
 {
     init_hash_table();
