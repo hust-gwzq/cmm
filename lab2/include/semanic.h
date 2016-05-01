@@ -2,36 +2,37 @@
 #define __SEMANIC_H__
 
 #include "syntax_tree.h"
+
 #define HASHSIZE 0x3fff
 
-// #define INT 0
-// #define FLOAT 1
-// #define ARRAY 2
-// #define STRUCT 3
-// #define FUNCTION 4
-// #define ALLFIT 5
-// #define VAR 6
-// #define ERROR 7
-// #define VALID 8
-// #define FIELDLIST 9
-// #define LOCAL 10
-// #define BASIC 11
+#define TYPE_INT 0
+#define TYPE_FLOAT 1
+#define TYPE_ARRAY 2
+#define TYPE_STRUCT 3
+#define TYPE_FUNCTION 4
+#define TYPE_ALL 5
+#define TYPE_VAR 6
+#define TYPE_ERROR 7
+#define TYPE_VALID 8
+#define TYPE_FIELDLIST 9
+#define TYPE_LOCAL 10
+#define TYPE_BASIC 11
 
 typedef struct Type_ Type_;
 typedef struct FieldList_ FieldList_;
 typedef struct Var_ Var_;
 typedef struct Func_ Func_;
 typedef struct Args_ Args_;
+typedef struct ReturnType_ ReturnType_;
 typedef struct Unit_ Unit_;
-typedef struct ExpReturnType_ ExpReturnType_;
 
 typedef Type_* Type;
 typedef FieldList_* FieldList;
 typedef Var_* Var;
 typedef Func_* Func;
 typedef Args_* Args;
+typedef ReturnType_* ReturnType;
 typedef Unit_* Unit;
-typedef ExpReturnType_* ExpReturnType;
 
 struct Type_
 {
@@ -75,7 +76,7 @@ struct Func_
 
 };
 
-struct ExpReturnType_
+struct ReturnType_
 {
     int kind;
     Type type;
@@ -105,26 +106,29 @@ int check_hash_table(char* name);
 Unit get_unit(char* name);
 
 // semanic analysis
-void program(struct Node* node);
-void extDefList(struct Node* node);
-void extDef(struct Node* node);
-void extDecList(struct Node* node, Type type);
-Type specifier(struct Node* node);
-Type structSpecifier(struct Node* node);
-Unit optTag(struct Node* node);
-void tag(struct Node* node);
-Var varDec(struct Node* node);
-Func funDec(struct Node* node);
-Args varList(struct Node* node);
-Args paramDec(struct Node* node);
-void compSt(struct Node* node);
-void stmtList(struct Node* node);
-void stmt(struct Node* node);
-FieldList defList(struct Node* node, int);
-FieldList def(struct Node* node, int);
-FieldList decList(struct Node*, Type type, int);
-FieldList dec(struct Node*, Type type, int);
-ExpReturnType_ exp(struct Node* node);
+void Program(struct Node* node);
+void ExtDefList(struct Node* node);
+void ExtDef(struct Node* node);
+void ExtDecList(struct Node* node, Type type);
+Type Specifier(struct Node* node);
+Type StructSpecifier(struct Node* node);
+Unit OptTag(struct Node* node);
+void Tag(struct Node* node);
+Var VarDec(struct Node* node);
+Func FunDec(struct Node* node);
 int args(struct Node* node, Args arg);
+Args VarList(struct Node* node);
+Args ParamDec(struct Node* node);
+void CompSt(struct Node* node);
+void StmtList(struct Node* node);
+void Stmt(struct Node* node);
+// bool is_val or struct
+// val = true
+// struct = false
+FieldList DefList(struct Node* node, bool is_val);
+FieldList Def(struct Node* node, bool is_val);
+FieldList DecList(struct Node*, Type type, bool is_val);
+FieldList Dec(struct Node*, Type type, bool is_val);
+ReturnType_ Exp(struct Node* node);
 
 #endif

@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 		// No error and print syntax tree.
 		if (errorA_num == 0 && errorB_num == 0)
 			//print_tree(root, 0);
-			program(root);
+			Program(root);
 	}
 	return 0;
 }
