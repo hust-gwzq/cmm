@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		yyparse();
-		// No error and print syntax tree.
+		// No error and goto semanic analysis.
 		if (errorA_num == 0 && errorB_num == 0)
 			//print_tree(root, 0);
 			Program(root);

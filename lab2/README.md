@@ -10,11 +10,10 @@
     │  
     ├─include
     │      syntax_tree.h
-    │      
+    │      semanic.h
     ├─script
     │      lexical.l
     │      syntax.y
-    │      semanic.h
     │      
     ├─src
     │      main.c
@@ -22,18 +21,23 @@
     |      semanic.c
     │      
     └─testcase
-            test1_1.cmm
-            test1_2.cmm
-            test1_3.cmm
-            test1_4.cmm
-            test1_5.cmm
-            test1_6.cmm
-            test1_7.cmm
-            test1_8.cmm
-            test1_9.cmm
-            test1_10.cmm
-            test1_11.cmm  # My own testcase for illegal id.
-            test1_12.cmm  # My own testcase for one of illegal exp float.
+            test2_1.cmm
+            test2_2.cmm
+            test2_3.cmm
+            test2_4.cmm
+            test2_5.cmm
+            test2_6.cmm
+            test2_7.cmm
+            test2_8.cmm
+            test2_9.cmm
+            test2_10.cmm
+            test2_11.cmm
+            test2_12.cmm
+            test2_13.cmm
+            test2_14.cmm
+            test2_15.cmm
+            test2_16.cmm
+            test2_17.cmm
 ####How to Compile
 `make` will generate lex.yy.c and syntax.tab.* and compile to `parser`  
-`make test` will run 12 testcases and display the result.
+`make test will run 17 testcases and display the result.

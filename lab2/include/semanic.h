@@ -5,6 +5,7 @@
 
 #define HASHSIZE 0x3fff
 
+// TYPE
 #define TYPE_INT 0
 #define TYPE_FLOAT 1
 #define TYPE_ARRAY 2
@@ -25,7 +26,7 @@ typedef struct Func_ Func_;
 typedef struct Args_ Args_;
 typedef struct ReturnType_ ReturnType_;
 typedef struct Unit_ Unit_;
-
+// Top type
 typedef Type_* Type;
 typedef FieldList_* FieldList;
 typedef Var_* Var;
@@ -75,7 +76,7 @@ struct Func_
     Type return_type;  // return type
 
 };
-
+// expression return type.
 struct ReturnType_
 {
     int kind;
@@ -90,10 +91,10 @@ struct Unit_
     int kind;
     union
     {
+        Type type;
+        FieldList fieldlist;
         Var var;
         Func func;
-        FieldList fieldlist;
-        Type type;
     } u;
     Unit next;
 };

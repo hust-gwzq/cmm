@@ -111,23 +111,23 @@ void ExtDef(struct Node* node)
     }
     else if (strcmp(node->children[1], "ExtDecList") == 0)
     {
-        Type thisType = Specifier(node->children[0]);
-        ExtDecList(node->children[1], thisType);
+        Type type = Specifier(node->children[0]);
+        ExtDecList(node->children[1], type);
     }
     else
     {
-        Type thisType = Specifier(node->children[0]);
+        Type type = Specifier(node->children[0]);
         Func func = FunDec(node->children[1]);
 
         Unit unit = (Unit)malloc(sizeof(Unit_));
         unit->name = func->name;
         unit->kind = TYPE_FUNCTION;
-        func->return_type = thisType;
+        func->return_type = type;
         unit->u.func = func;
 
         insert_hash_table(unit);
 
-        this = thisType;
+        this = type;
 
         CompSt(node->children[2]);
     }
@@ -226,9 +226,10 @@ Type StructSpecifier(struct Node* node)
 
 Unit OptTag(struct Node* node)
 {
+    // print_tree(node, 0);
     if (node->children_num == 1)
     {
-        //ID
+        // struct id is existed
         if (check_hash_table(node->children[0]->value) == 1)
             printf("Error type 16 at Line %d: Duplicated name \"%s\".\n", node->children[0]->line_num, node->children[0]->value);
 
@@ -267,6 +268,7 @@ Unit OptTag(struct Node* node)
 
 Var VarDec(struct Node* node)
 {
+    // print_tree(node, 0);
     if (node->children_num == 1)
     {
         //ID
@@ -352,6 +354,7 @@ Args VarList(struct Node* node)
 
 Args ParamDec(struct Node* node)
 {
+    // print_tree(node, 0);
     Type type = Specifier(node->children[0]);
     Var var = VarDec(node->children[1]);
     if (var->type == 0)
@@ -397,7 +400,7 @@ void StmtList(struct Node* node)
 
 void Stmt(struct Node* node)
 {
-    // printf("In Stmt\n");
+    // print_tree(node, 0);
     if (node->children_num == 2)
     {
         //Exp SEMI
@@ -440,6 +443,7 @@ void Stmt(struct Node* node)
 
 FieldList DefList(struct Node* node, bool is_val)
 {
+    // print_tree(node, 0);
     if (strcmp(node->name, "") == 0)
         return NULL;
 
@@ -469,6 +473,7 @@ FieldList DefList(struct Node* node, bool is_val)
 
 FieldList Def(struct Node* node, bool is_val)
 {
+    // print_tree(node, 0);
     Type type = Specifier(node->children[0]);
     FieldList fieldlist = DecList(node->children[1], type, is_val);
 
@@ -477,6 +482,7 @@ FieldList Def(struct Node* node, bool is_val)
 
 FieldList DecList(struct Node* node, Type type, bool is_val)
 {
+    // print_tree(node, 0);
     FieldList fieldlist = Dec(node->children[0], 0, is_val);
     if (node->children_num == 1)
         return fieldlist;
@@ -495,6 +501,7 @@ FieldList DecList(struct Node* node, Type type, bool is_val)
 
 FieldList Dec(struct Node* node, Type type, bool is_val)
 {
+    // print_tree(node, 0);
     Var var = VarDec(node->children[0]);
     if (check_hash_table(var->name) == 1)
     {
@@ -639,6 +646,7 @@ ReturnType_ Exp(struct Node* node)
         }
         else if (strcmp(node->children[1]->name, "LB") == 0)
         {
+            // print_tree(node, 0);
             ReturnType_ returntype2 = Exp(node->children[2]);
 
             if (returntype1.kind == TYPE_ERROR || returntype2.kind == TYPE_ERROR)
