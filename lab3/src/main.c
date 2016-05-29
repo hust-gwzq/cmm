@@ -2,6 +2,7 @@
 #include "../include/syntax_tree.h"
 #include "../include/syntax.tab.h"
 #include "../include/semanic.h"
+#include "../include/intercode.h"
 extern FILE* yyin;
 extern struct YYLTYPE;
 extern YYLTYPE yylloc;
@@ -12,7 +13,7 @@ extern int errorB_num;
 int yylex();
 int main(int argc, char *argv[])
 {
-	if (argc > 1)
+	if (argc == 3)
 	{
 		if (!(yyin = fopen(argv[1], "r")))
 		{
@@ -21,9 +22,16 @@ int main(int argc, char *argv[])
 		}
 		yyparse();
 		// No error and goto semanic analysis.
-		if (errorA_num == 0 && errorB_num == 0)
+		// if (errorA_num == 0 && errorB_num == 0)
 			//print_tree(root, 0);
-			Program(root);
+			// Program(root);
+		translateProgram(root);
+		
+		printInFile(argv[2]);
+	}
+	else
+	{
+		printf("Usage: parser in.cmm out.ir\n");
 	}
 	return 0;
 }
