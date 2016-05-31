@@ -26,4 +26,4 @@
             test3_2.cmm
 ####How to Compile
 `make` will generate lex.yy.c and syntax.tab.* and compile to `parser`  
-`make` test will run 2 testcases and generate the ir file in the output folder.
+`make` test will run 2 testcases and generate the `*.ir` file in the output folder.
