@@ -1,5 +1,4 @@
 #include "../include/intercode.h"
-#include "../include/semanic.h"
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -10,23 +9,25 @@ LinkedInterCode* head = 0;
 LinkedInterCode* tail = 0;
 
 typedef struct FieldList_* FieldList;
+// use string for char*
+typedef char* string;
 
 int labelNo = 1;
 int varNo = 1;
 
-int sizeType(Type type)
+int getTypeSize(Type type)
 {
 	FieldList fl;
 	switch(type->kind)
 	{
 		case BASIC: return 4;
-		case ARRAY: return sizeType(type->u.array.elem) * type->u.array.size;
+		case ARRAY: return getTypeSize(type->u.array.elem) * type->u.array.size;
 		case STRUCTURE:
 
 			fl = type->u.structure;
 			int size = 0;
 			for(; fl != 0; fl = fl->tail)
-				size += sizeType(fl->type);
+				size += getTypeSize(fl->type);
 			return size;
 		default:
 			printf("Unknown type...\n");
@@ -34,9 +35,9 @@ int sizeType(Type type)
 	}
 }
 
-char* newLabel()
+string newLabel()
 {
-	char* temp = (char*)malloc(MAXSIZE);
+	string temp = (string)malloc(MAXSIZE);
 	sprintf(temp, "label%d", labelNo);
 	labelNo++;
 	return temp;
@@ -53,7 +54,7 @@ Operand* newVar()
 {
 	Operand* temp = (Operand*)malloc(sizeof(Operand));
 	temp->kind = VARIABLE_OP;
-	temp->u.name = (char*)malloc(MAXSIZE);
+	temp->u.name = (string)malloc(MAXSIZE);
 	sprintf(temp->u.name, "t%d", varNo);
 	varNo++;
 	return temp;
@@ -119,9 +120,9 @@ void translateArray(Node* node, Type type, Type tp, Operand* last, Operand* temp
 	ic->u.triop.op2 = t1;
 	insertLink(ic);
 
-	if(tpSize > 1)
+	if (tpSize > 1)
 	{	
-		printf("Array here...\n");
+		// printf("Array here...\n");
 		ic = newInterCode();
 		ic->kind = MUL_IC;
 		ic->u.triop.result = t1;
@@ -161,7 +162,7 @@ void translateArray(Node* node, Type type, Type tp, Operand* last, Operand* temp
 	}
 }
 
-void translateCond(Node* node, char* labelTrue, char* labelFalse)
+void translateCond(Node* node, string labelTrue, string labelFalse)
 {
 	//node is Exp.
 	//printf("In COND\n");
@@ -194,7 +195,7 @@ void translateCond(Node* node, char* labelTrue, char* labelFalse)
 	}
 	else if (strcmp(node->children[1]->name, "AND") == 0)
 	{
-		char* label1 = newLabel();
+		string label1 = newLabel();
 
   		translateCond(node->children[0], label1, labelFalse);
 
@@ -208,7 +209,7 @@ void translateCond(Node* node, char* labelTrue, char* labelFalse)
 	}
 	else if (strcmp(node->children[1]->name, "OR") == 0)
 	{
-		char* label1 = newLabel();
+		string label1 = newLabel();
 
   		translateCond(node->children[0], labelTrue, label1);
 
@@ -302,12 +303,12 @@ int translateSpecifier(Node* node)
 			int size = 0;
 			FieldList fl = i->u.fieldlist;
 			for(; fl != 0; fl = fl->tail)
-				size += sizeType(fl->type);
+				size += getTypeSize(fl->type);
 		}
 	}
 }
 
-char* translateVarDec(Node* node, int size)
+string translateVarDec(Node* node, int size)
 {
 	//printf("In VarDec\n");
 	assert(strcmp(node->name, "VarDec") == 0);
@@ -315,7 +316,7 @@ char* translateVarDec(Node* node, int size)
 	{
 		//ID.
 		//printf("children_num=1\n");
-		char* id = node->children[0]->value;
+		string id = node->children[0]->value;
 		if (size > 4)
 		{
      
@@ -376,7 +377,7 @@ void translateParamDec(Node* node)
 	//printf("In ParamDec\n");
 	assert(strcmp(node->name, "ParamDec") == 0);
 	//Specifier VarDec
-	char* id  = translateVarDec(node->children[1], 0);
+	string id  = translateVarDec(node->children[1], 0);
 
 	InterCode* ic = newInterCode();
 	ic->kind = PARAM_IC;
@@ -445,9 +446,9 @@ void translateStmt(Node* node)
   	}
   	else if (strcmp(node->children[0]->name, "WHILE") == 0)
   	{
-  		char* label1 = newLabel();
-  		char* label2 = newLabel();
-  		char* label3 = newLabel();
+  		string label1 = newLabel();
+  		string label2 = newLabel();
+  		string label3 = newLabel();
 
   		InterCode* ic = newInterCode();
   		ic->kind = LABEL_IC;
@@ -488,8 +489,8 @@ void translateStmt(Node* node)
   		assert(strcmp(node->children[0]->name, "IF") == 0);
   		if (node->children_num == 5)
   		{
-  			char* label1 = newLabel();
-	  		char* label2 = newLabel();
+  			string label1 = newLabel();
+	  		string label2 = newLabel();
 
 	  		translateCond(node->children[2], label1, label2);
 
@@ -514,9 +515,9 @@ void translateStmt(Node* node)
   		{
   			assert(node->children_num == 7);
 
-  			char* label1 = newLabel();
-	  		char* label2 = newLabel();
-	  		char* label3 = newLabel();
+  			string label1 = newLabel();
+	  		string label2 = newLabel();
+	  		string label3 = newLabel();
 
 	  		translateCond(node->children[2], label1, label2);
 
@@ -611,7 +612,7 @@ void translateDec(Node* node, int size)
 	//VarDec
   	//VarDec ASSIGNOP Exp
   	assert(strcmp(node->name, "Dec") == 0);
-  	char* v = translateVarDec(node->children[0], size);
+  	string v = translateVarDec(node->children[0], size);
   	//printf("woo is %s\n", v);
 
   	if (node->children_num == 3)
@@ -778,9 +779,8 @@ void translateExp(Node* node, Operand* op)
 				   (strcmp(node->children[0]->name, "NOT") == 0))
 		{
 
-			printf("PPPPPPPPRELOPPPPPPPP\n");
-			char* label1 = newLabel();
-	  		char* label2 = newLabel();
+			string label1 = newLabel();
+	  		string label2 = newLabel();
 
 	  		InterCode* ic = newInterCode();
 	  		ic->kind = ASSIGN_IC;
@@ -843,12 +843,6 @@ void translateExp(Node* node, Operand* op)
 			op->kind = ADDRESS_OP;
 			translateArray(node, type, tp, 0, op);
 
-		}
-		else
-		{
-			printf("Why i am here\n");
-			//Do nothing.
-			//EXP DOT..
 		}
 	}
 	else if (strcmp(node->children[0]->name, "LP") == 0)
@@ -993,25 +987,25 @@ void translateArgs(Node* node, Operand** args)
 	return;
 }
 
-void printInFile(char* filename)
+void printInFile(string filename)
 {
-	FILE* f = fopen(filename, "w");
-	if (!f)
+	FILE* file = fopen(filename, "w");
+	if (file != NULL)
+	{
+		LinkedInterCode* lic = head;
+		for (lic = head; lic != 0; lic = lic->next)
+			generateCode(file, lic->code);
+	}
+	else
 	{
 		printf("Error openning file!\n");
 		exit(-1);
 	}
-	//printf("Creating file done\n");
 
-	LinkedInterCode* lic = head;
-	for (lic = head; lic != 0; lic = lic->next)
-		writeCode(f, lic->code);
-
-	fclose(f);
-	return;
+	fclose(file);
 }
 
-void writeCode(FILE* f, InterCode* ic)
+void generateCode(FILE* f, InterCode* ic)
 {
 	//printf("Writing a code  %d\n", ic->kind);
 	switch(ic->kind)
@@ -1182,6 +1176,5 @@ void writeCode(FILE* f, InterCode* ic)
 		default:
 			printf("Wrong kind: %d\n", ic->kind);
 			break;
-
 	}
 }

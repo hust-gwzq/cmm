@@ -2,6 +2,7 @@
 #define __INTERCODE_H__
 
 #include "syntax_tree.h"
+#include "semanic.h"
 #include <stdio.h>
 
 struct Operand 
@@ -55,6 +56,7 @@ struct LinkedInterCode
 
 typedef struct LinkedInterCode LinkedInterCode;
 
+int getTypeSize(Type type);
 LinkedInterCode* bindCode(LinkedInterCode*, LinkedInterCode*);
 void writeCode(FILE* f, InterCode* ic);
 void printInFile(char* filename);
