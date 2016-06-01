@@ -3,6 +3,7 @@
 #include "../include/syntax.tab.h"
 #include "../include/semanic.h"
 #include "../include/intercode.h"
+
 extern FILE* yyin;
 extern struct YYLTYPE;
 extern YYLTYPE yylloc;
@@ -11,6 +12,7 @@ extern struct Node* root;
 extern int errorA_num;
 extern int errorB_num;
 int yylex();
+
 int main(int argc, char *argv[])
 {
 	if (argc == 3)
@@ -27,7 +29,7 @@ int main(int argc, char *argv[])
 			// Program(root);
 		translateProgram(root);
 		
-		printInFile(argv[2]);
+		outputFile(argv[2]);
 	}
 	else
 	{

@@ -5,30 +5,29 @@
 
 #define MAXSIZE 64
 
-// define head ptr and tail ptr
-InterCodes* head = 0;
-InterCodes* tail = 0;
-
 typedef struct FieldList_* FieldList;
+
+// define head ptr and tail ptr
+InterCodes* head = NULL;
+InterCodes* tail = NULL;
 
 int labelNo = 1;
 int varNo = 1;
 
 int getTypeSize(Type type)
 {
-    FieldList fl;
+    FieldList fieldList;
     switch(type->kind)
     {
     case BASIC:
         return 4;
-    case ARRAY_:
+    case ARRAY:
         return getTypeSize(type->u.array.elem) * type->u.array.size;
     case STRUCTURE:
-
-        fl = type->u.structure;
+        fieldList = type->u.structure;
         int size = 0;
-        for(; fl != 0; fl = fl->tail)
-            size += getTypeSize(fl->type);
+        for(; fieldList != NULL; fieldList = fieldList->tail)
+            size += getTypeSize(fieldList->type);
         return size;
     default:
         printf("Unknown type...\n");
@@ -36,17 +35,29 @@ int getTypeSize(Type type)
     }
 }
 
+InterCodes* linkNode(InterCodes* interCodes1, InterCodes* interCodes2)
+{
+    interCodes1->next = interCodes2;
+	interCodes2->prev = interCodes1;
+	
+    interCodes1->prev = NULL;
+	interCodes2->next = NULL;
+
+    return interCodes1;
+}
+
 string newLabel()
 {
     string temp = (string)malloc(MAXSIZE);
     sprintf(temp, "label%d", labelNo);
-    labelNo++;
+    labelNo += 1;
+	
     return temp;
 }
 
 Operand* newOperand()
 {
-    //You need to free it after using it!
+    // remember free the space.
     Operand* operand = (Operand*)malloc(sizeof(Operand));
     return operand;
 }
@@ -57,33 +68,27 @@ Operand* newVar()
     temp->kind = VARIABLE;
     temp->u.name = (string)malloc(MAXSIZE);
     sprintf(temp->u.name, "t%d", varNo);
-    varNo++;
+    varNo += 1;
+	
     return temp;
 }
 
 InterCode* newInterCode()
 {
     //You need to free it after using it!
-    InterCode* ic = (InterCode*)malloc(sizeof(InterCode));
-    return ic;
+    InterCode* interCode = (InterCode*)malloc(sizeof(InterCode));
+    return interCode;
 }
 
-InterCodes* linkNode(InterCodes* lic1, InterCodes* lic2)
-{
-    lic1->next = lic2;
-    lic2->next = 0;
-    lic1->prev = 0;
-    lic2->prev = lic1;
-    return lic1;
-}
 
-InterCodes* insertLink(InterCode* ic)
+
+InterCodes* insertLink(InterCode* interCode)
 {
     InterCodes* lic = (InterCodes*)malloc(sizeof(struct InterCodes));
-    lic->code = ic;
-    lic->prev = 0;
-    lic->next = 0;
-    if(head == 0)
+    lic->code = interCode;
+    lic->prev = NULL;
+    lic->next = NULL;
+    if (head == NULL)
     {
         head = lic;
         tail = lic;
@@ -93,156 +98,10 @@ InterCodes* insertLink(InterCode* ic)
         tail->next = lic;
         lic->prev = tail;
         tail = lic;
-        tail->next = 0;//head?
-        head->prev = 0;//tail? Loop linkedlist?
+        tail->next = NULL;
+        head->prev = NULL;
     }
     return lic;
-}
-
-void translateArray(Node* node, Type type, Type tp, Operand* last, Operand* temp)
-{
-    Node* q = node->children[0];
-
-    Type t;
-
-    int tpSize = 1;
-    for(t=tp->u.array.elem; t->u.array.elem!=0; t=t->u.array.elem)
-        tpSize *= t->u.array.size;
-
-    Operand* t1 = newVar();
-    translateExp(node->children[2], t1);
-
-    InterCode* ic = newInterCode();
-    ic->kind = MUL_IC;
-    ic->u.triop.result = t1;
-    ic->u.triop.operand1 = newOperand();
-    ic->u.triop.operand1->kind = CONSTANT;
-    ic->u.triop.operand1->u.value = 4;
-    ic->u.triop.operand2 = t1;
-    insertLink(ic);
-
-    if (tpSize > 1)
-    {
-        // printf("Array here...\n");
-        ic = newInterCode();
-        ic->kind = MUL_IC;
-        ic->u.triop.result = t1;
-        ic->u.triop.operand1 = newOperand();
-        ic->u.triop.operand1->kind = CONSTANT;
-        ic->u.triop.operand1->u.value = tpSize;
-        ic->u.triop.operand2 = t1;
-        insertLink(ic);
-    }
-
-    if(last != 0)
-    {
-        ic = newInterCode();
-        ic->kind = ADD_IC;
-        ic->u.triop.result = t1;
-        ic->u.triop.operand1 = t1;
-        ic->u.triop.operand2 = last;
-        insertLink(ic);
-    }
-
-    if(strcmp(q->children[0]->name,"ID")==0)
-    {
-        ic = newInterCode();
-        ic->kind = ADD_IC;
-        ic->u.triop.result = temp;
-        ic->u.triop.operand1 = newOperand();
-        ic->u.triop.operand1->kind = ARRAY_;
-        ic->u.triop.operand1->u.name = strdup(q->children[0]->value);
-        ic->u.triop.operand2 = t1;
-        insertLink(ic);
-    }
-    else
-    {
-        //Find previous
-        for(t=type; t->u.array.elem!=tp; t=t->u.array.elem);
-        translateArray(q,type,t,t1,temp);
-    }
-}
-
-void translateCond(Node* node, string labelTrue, string labelFalse)
-{
-    //node is Exp.
-    //printf("In COND\n");
-    assert(strcmp(node->name, "Exp") == 0);
-
-    if (strcmp(node->children[1]->name, "RELOP") == 0)
-    {
-        //printf("Here am I\n");
-        Operand* t1 = newVar();
-        Operand* t2 = newVar();
-        translateExp(node->children[0], t1);
-        translateExp(node->children[2], t2);
-
-        InterCode* ic = newInterCode();
-        ic->kind = COND_IC;
-        ic->u.cond.operand1 = t1;
-        ic->u.cond.operand2 = t2;
-        ic->u.cond.op = strdup(node->children[1]->value);
-        ic->u.cond.name = strdup(labelTrue);
-        insertLink(ic);
-
-        ic = newInterCode();
-        ic->kind = LABEL_GOTO_IC;
-        ic->u.label_goto.name = strdup(labelFalse);
-        insertLink(ic);
-    }
-    else if (strcmp(node->children[0]->name, "NOT") == 0)
-    {
-        translateCond(node->children[1], labelFalse, labelTrue);
-    }
-    else if (strcmp(node->children[1]->name, "AND") == 0)
-    {
-        string label1 = newLabel();
-
-        translateCond(node->children[0], label1, labelFalse);
-
-        InterCode* ic = newInterCode();
-        ic->kind = LABEL_IC;
-        ic->u.label.name = strdup(label1);
-        insertLink(ic);
-
-        translateCond(node->children[2], labelTrue, labelFalse);
-        free(label1);
-    }
-    else if (strcmp(node->children[1]->name, "OR") == 0)
-    {
-        string label1 = newLabel();
-
-        translateCond(node->children[0], labelTrue, label1);
-
-        InterCode* ic = newInterCode();
-        ic->kind = LABEL_IC;
-        ic->u.label.name = strdup(label1);
-        insertLink(ic);
-
-        translateCond(node->children[2], labelTrue, labelFalse);
-        free(label1);
-    }
-    else
-    {
-        Operand* t1 = newVar();
-        translateExp(node, t1);
-
-        InterCode* ic = newInterCode();
-        ic->kind = COND_IC;
-        ic->u.cond.operand1 = t1;
-        ic->u.cond.operand2 = newOperand();
-        ic->u.cond.operand2->kind = CONSTANT;
-        ic->u.cond.operand2->u.value = 0;
-        ic->u.cond.op = strdup("!=");
-        ic->u.cond.name = strdup(labelTrue);
-        insertLink(ic);
-
-        ic = newInterCode();
-        ic->kind = LABEL_GOTO_IC;
-        ic->u.label_goto.name = strdup(labelFalse);
-        insertLink(ic);
-    }
-    return;
 }
 
 void translateProgram(Node* node)
@@ -250,21 +109,17 @@ void translateProgram(Node* node)
     //printf("In Program\n");
     assert(strcmp(node->name, "Program") == 0);
     translateExtDefList(node->children[0]);
-    return;
 }
 
 void translateExtDefList(Node* node)
 {
     //printf("In ExtDefList\n");
     assert(strcmp(node->name, "ExtDefList") == 0);
-    if (0 == node->children_num)
-        return;
-    else
+    if (node->children_num)
     {
         translateExtDef(node->children[0]);
         if (strcmp(node->children[1]->name, "") != 0)
             translateExtDefList(node->children[1]);
-        return;
     }
 }
 
@@ -272,12 +127,11 @@ void translateExtDef(Node* node)
 {
     //printf("In ExtDef\n");
     assert(strcmp(node->name, "ExtDef") == 0);
-    if (3 == node->children_num && strcmp(node->children[1]->name, "FunDec") == 0)
+    if (node->children_num == 3 && strcmp(node->children[1]->name, "FunDec") == 0)
     {
         translateFunDec(node->children[1]);
         translateCompSt(node->children[2]);
     }
-    return;
 }
 
 int translateSpecifier(Node* node)
@@ -286,7 +140,6 @@ int translateSpecifier(Node* node)
     assert(strcmp(node->name, "Specifier") == 0);
     if (strcmp(node->children[0]->name, "TYPE") == 0)
     {
-        //Never float.
         return 4;
     }
     else
@@ -300,11 +153,11 @@ int translateSpecifier(Node* node)
         if (strcmp(structNode->children[1]->name, "Tag") == 0)
         {
             //printf("struct name is %s\n", structNode->children[1]->children[0]->value);
-            Unit i = get_unit(structNode->children[1]->children[0]->value);
+            Unit unit = get_unit(structNode->children[1]->children[0]->value);
             int size = 0;
-            FieldList fl = i->u.fieldlist;
-            for(; fl != 0; fl = fl->tail)
-                size += getTypeSize(fl->type);
+            FieldList fieldList = unit->u.fieldlist;
+            for(; fieldList != NULL; fieldList = fieldList->tail)
+                size += getTypeSize(fieldList->type);
         }
     }
 }
@@ -321,13 +174,13 @@ string translateVarDec(Node* node, int size)
         if (size > 4)
         {
 
-            InterCode* ic = newInterCode();
-            ic->kind = DEC_IC;
-            ic->u.dec.operand = newOperand();
-            ic->u.dec.operand->kind = ARRAY_;
-            ic->u.dec.operand->u.name = strdup(node->children[0]->value);
-            ic->u.dec.size = size;
-            insertLink(ic);
+            InterCode* interCode = newInterCode();
+            interCode->kind = DEC_;
+            interCode->u.dec.operand = newOperand();
+            interCode->u.dec.operand->kind = ARRAY_;
+            interCode->u.dec.operand->u.name = strdup(node->children[0]->value);
+            interCode->u.dec.size = size;
+            insertLink(interCode);
 
         }
         return id;
@@ -336,6 +189,7 @@ string translateVarDec(Node* node, int size)
     {
         //VarDec LB INT RB
         assert(node->children_num == 4);
+		
         int n = strtol(node->children[2]->value, 0, 10);
         //printf("%c\n", node->children[2]->value);
         size *= n;
@@ -351,10 +205,10 @@ void translateFunDec(Node* node)
     //ID LP RP
     assert(strcmp(node->name, "FunDec") == 0);
 
-    InterCode* ic = newInterCode();
-    ic->kind = FUNCTION_IC;
-    ic->u.function.name = strdup(node->children[0]->value);
-    insertLink(ic);
+    InterCode* interCode = newInterCode();
+    interCode->kind = FUNCTION_;
+    interCode->u.function.name = strdup(node->children[0]->value);
+    insertLink(interCode);
 
     if (node->children_num == 4)
         translateVarList(node->children[2]);
@@ -380,10 +234,10 @@ void translateParamDec(Node* node)
     //Specifier VarDec
     string id  = translateVarDec(node->children[1], 0);
 
-    InterCode* ic = newInterCode();
-    ic->kind = PARAM_IC;
-    ic->u.param.name = strdup(id);
-    insertLink(ic);
+    InterCode* interCode = newInterCode();
+    interCode->kind = PARAM_;
+    interCode->u.param.name = strdup(id);
+    insertLink(interCode);
     return;
 }
 
@@ -440,10 +294,10 @@ void translateStmt(Node* node)
 
         translateExp(node->children[1], t1);
 
-        InterCode* ic = newInterCode();
-        ic->kind = RETURN_IC;
-        ic->u.ret.operand = t1;
-        insertLink(ic);
+        InterCode* interCode = newInterCode();
+        interCode->kind = RETURN_;
+        interCode->u.ret.operand = t1;
+        insertLink(interCode);
     }
     else if (strcmp(node->children[0]->name, "WHILE") == 0)
     {
@@ -451,32 +305,32 @@ void translateStmt(Node* node)
         string label2 = newLabel();
         string label3 = newLabel();
 
-        InterCode* ic = newInterCode();
-        ic->kind = LABEL_IC;
-        ic->u.label.name = strdup(label1);
-        insertLink(ic);
+        InterCode* interCode = newInterCode();
+        interCode->kind = LABEL_;
+        interCode->u.label.name = strdup(label1);
+        insertLink(interCode);
 
         translateCond(node->children[2], label2, label3);
 
         //Label 2
-        ic = newInterCode();
-        ic->kind = LABEL_IC;
-        ic->u.label.name = strdup(label2);
-        insertLink(ic);
+        interCode = newInterCode();
+        interCode->kind = LABEL_;
+        interCode->u.label.name = strdup(label2);
+        insertLink(interCode);
 
         translateStmt(node->children[4]);
 
         //Go to label 1
-        ic = newInterCode();
-        ic->kind = LABEL_GOTO_IC;
-        ic->u.label_goto.name = strdup(label1);
-        insertLink(ic);
+        interCode = newInterCode();
+        interCode->kind = LABEL_GOTO_;
+        interCode->u.label_goto.name = strdup(label1);
+        insertLink(interCode);
 
         //Label 3
-        ic = newInterCode();
-        ic->kind = LABEL_IC;
-        ic->u.label.name = strdup(label3);
-        insertLink(ic);
+        interCode = newInterCode();
+        interCode->kind = LABEL_;
+        interCode->u.label.name = strdup(label3);
+        insertLink(interCode);
 
         free(label1);
         free(label2);
@@ -496,18 +350,18 @@ void translateStmt(Node* node)
             translateCond(node->children[2], label1, label2);
 
             //Label1
-            InterCode* ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label1);
-            insertLink(ic);
+            InterCode* interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label1);
+            insertLink(interCode);
 
             translateStmt(node->children[4]);
 
             //Label 2
-            ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label2);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label2);
+            insertLink(interCode);
 
             free(label1);
             free(label2);
@@ -523,30 +377,30 @@ void translateStmt(Node* node)
             translateCond(node->children[2], label1, label2);
 
             //Label1
-            InterCode* ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label1);
-            insertLink(ic);
+            InterCode* interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label1);
+            insertLink(interCode);
 
             translateStmt(node->children[4]);
 
             //Goto label3
-            ic = newInterCode();
-            ic->kind = LABEL_GOTO_IC;
-            ic->u.label_goto.name = strdup(label3);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_GOTO_;
+            interCode->u.label_goto.name = strdup(label3);
+            insertLink(interCode);
 
             //Label 2
-            ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label2);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label2);
+            insertLink(interCode);
 
             translateStmt(node->children[6]);
-            ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label3);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label3);
+            insertLink(interCode);
 
             free(label1);
             free(label2);
@@ -624,16 +478,16 @@ void translateDec(Node* node, int size)
 
         //Assign.
 
-        InterCode* ic = newInterCode();
-        ic->kind = ASSIGN_IC;
-        ic->u.binop.result = newOperand();
-        ic->u.binop.result->kind = VARIABLE;
+        InterCode* interCode = newInterCode();
+        interCode->kind = ASSIGN_;
+        interCode->u.binop.result = newOperand();
+        interCode->u.binop.result->kind = VARIABLE;
         //printf("here???\n");
-        ic->u.binop.result->u.name = strdup(v);
+        interCode->u.binop.result->u.name = strdup(v);
         //printf("get here?\n");
-        ic->u.binop.operand = t1;
-        printf("ASS in Dec, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
-        insertLink(ic);
+        interCode->u.binop.operand = t1;
+        printf("ASS in Dec, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
+        insertLink(interCode);
     }
     //printf("Dec over\n");
     return;
@@ -642,25 +496,24 @@ void translateDec(Node* node, int size)
 
 void translateExp(Node* node, Operand* operand)
 {
-    //printf("In Exp\n");
-    //Exp ASSIGNOP Exp
-    //Exp AND Exp
-    //Exp OR Exp
-    //Exp RELOP Exp
-    //Exp PLUS Exp
-    //Exp MINUS Exp
-    //Exp STAR Exp
-    //Exp DIV Exp
-    //LP Exp RP
-    //MINUS Exp
-    //NOT Exp
-    //ID LP Args RP
-    //ID LP RP
-    //Exp LB Exp RB
-    //Exp DOT ID
-    //ID
-    //INT
-    //FLOAT
+    // Exp ASSIGNOP Exp
+    // Exp AND Exp
+    // Exp OR Exp
+    // Exp RELOP Exp
+    // Exp PLUS Exp
+    // Exp MINUS Exp
+    // Exp STAR Exp
+    // Exp DIV Exp
+    // LP Exp RP
+    // MINUS Exp
+    // NOT Exp
+    // ID LP Args RP
+    // ID LP RP
+    // Exp LB Exp RB
+    // Exp DOT ID
+    // ID
+    // INT
+    // FLOAT
     assert(strcmp(node->name, "Exp") == 0);
 
     if (strcmp(node->children[0]->name, "Exp") == 0)
@@ -675,51 +528,50 @@ void translateExp(Node* node, Operand* operand)
                 translateExp(node->children[2], t1);
 
                 //Assign.
-                InterCode* ic = newInterCode();
-                ic->kind = ASSIGN_IC;
-                ic->u.binop.result = newOperand();
-                ic->u.binop.result->kind = VARIABLE;
-                ic->u.binop.result->u.name = strdup(node->children[0]->children[0]->value);
-                ic->u.binop.operand = t1;
-                //printf("ASS in Exp assop 1, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = ASSIGN_;
+                interCode->u.binop.result = newOperand();
+                interCode->u.binop.result->kind = VARIABLE;
+                interCode->u.binop.result->u.name = strdup(node->children[0]->children[0]->value);
+                interCode->u.binop.operand = t1;
+                //printf("ASS in Exp assop 1, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
+                insertLink(interCode);
 
                 if (operand != 0)
                 {
-                    ic = newInterCode();
-                    ic->kind = ASSIGN_IC;
-                    ic->u.binop.result = operand;
-                    ic->u.binop.operand = newOperand();
-                    ic->u.binop.operand->kind = VARIABLE;
+                    interCode = newInterCode();
+                    interCode->kind = ASSIGN_;
+                    interCode->u.binop.result = operand;
+                    interCode->u.binop.operand = newOperand();
+                    interCode->u.binop.operand->kind = VARIABLE;
                     //Here node->children[2]?
-                    ic->u.binop.operand->u.name = strdup(node->children[2]->children[0]->value);
-                    //printf("ASS in Exp assop 2, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
+                    interCode->u.binop.operand->u.name = strdup(node->children[2]->children[0]->value);
+                    //printf("ASS in Exp assop 2, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
 
-                    insertLink(ic);
+                    insertLink(interCode);
                 }
             }
-            else if( it != 0 && it->kind == ARRAY_)
+            else if(it != 0 && it->kind == ARRAY_)
             {
-                printf("I'm here...\n");
                 Operand* t1 = newVar();
                 Operand* t2 = newVar();
 
                 translateExp(node->children[0], t1);
                 translateExp(node->children[2], t2);
-                InterCode* ic = newInterCode();
-                ic->kind = ASSIGN_IC;
-                ic->u.binop.result = t1;
-                ic->u.binop.operand = t2;
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = ASSIGN_;
+                interCode->u.binop.result = t1;
+                interCode->u.binop.operand = t2;
+                insertLink(interCode);
 
                 if (operand != 0)
                 {
-                    ic = newInterCode();
-                    ic->kind = ASSIGN_IC;
-                    ic->u.binop.result = operand;
-                    ic->u.binop.operand = newOperand();
-                    ic->u.binop.operand->kind = VARIABLE;
-                    ic->u.binop.operand->u.name = strdup(node->children[2]->children[0]->value);
+                    interCode = newInterCode();
+                    interCode->kind = ASSIGN_;
+                    interCode->u.binop.result = operand;
+                    interCode->u.binop.operand = newOperand();
+                    interCode->u.binop.operand->kind = VARIABLE;
+                    interCode->u.binop.operand->u.name = strdup(node->children[2]->children[0]->value);
                 }
             }
         }
@@ -734,44 +586,44 @@ void translateExp(Node* node, Operand* operand)
             translateExp(node->children[0], t1);
             translateExp(node->children[2], t2);
 
-            InterCode* ic;
+            InterCode* interCode;
 
             if (strcmp(node->children[1]->name, "PLUS") == 0)
             {
-                ic = newInterCode();
-                ic->kind = ADD_IC;
-                ic->u.triop.result = operand;
-                ic->u.triop.operand1 = t1;
-                ic->u.triop.operand2 = t2;
-                insertLink(ic);
+                interCode = newInterCode();
+                interCode->kind = ADD_;
+                interCode->u.triop.result = operand;
+                interCode->u.triop.operand1 = t1;
+                interCode->u.triop.operand2 = t2;
+                insertLink(interCode);
             }
             else if (strcmp(node->children[1]->name, "MINUS") == 0)
             {
-                ic = newInterCode();
-                ic->kind = SUB_IC;
-                ic->u.triop.result = operand;
-                ic->u.triop.operand1 = t1;
-                ic->u.triop.operand2 = t2;
-                insertLink(ic);
+                interCode = newInterCode();
+                interCode->kind = SUB_;
+                interCode->u.triop.result = operand;
+                interCode->u.triop.operand1 = t1;
+                interCode->u.triop.operand2 = t2;
+                insertLink(interCode);
             }
             else if (strcmp(node->children[1]->name, "STAR") == 0)
             {
-                ic = newInterCode();
-                ic->kind = MUL_IC;
-                ic->u.triop.result = operand;
-                ic->u.triop.operand1 = t1;
-                ic->u.triop.operand2 = t2;
-                insertLink(ic);
+                interCode = newInterCode();
+                interCode->kind = MUL_;
+                interCode->u.triop.result = operand;
+                interCode->u.triop.operand1 = t1;
+                interCode->u.triop.operand2 = t2;
+                insertLink(interCode);
             }
             else
             {
                 assert(strcmp(node->children[1]->name, "DIV") == 0);
-                ic = newInterCode();
-                ic->kind = DIV_IC;
-                ic->u.triop.result = operand;
-                ic->u.triop.operand1 = t1;
-                ic->u.triop.operand2 = t2;
-                insertLink(ic);
+                interCode = newInterCode();
+                interCode->kind = DIV_;
+                interCode->u.triop.result = operand;
+                interCode->u.triop.operand1 = t1;
+                interCode->u.triop.operand2 = t2;
+                insertLink(interCode);
             }
         }
         else if ((strcmp(node->children[1]->name, "RELOP") == 0) ||
@@ -783,37 +635,37 @@ void translateExp(Node* node, Operand* operand)
             string label1 = newLabel();
             string label2 = newLabel();
 
-            InterCode* ic = newInterCode();
-            ic->kind = ASSIGN_IC;
-            ic->u.binop.result = operand;
-            ic->u.binop.operand = newOperand();
-            ic->u.binop.operand->kind = CONSTANT;
-            ic->u.binop.operand->u.value = 0;
-            //printf("ASS in Exp andnotor1, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
+            InterCode* interCode = newInterCode();
+            interCode->kind = ASSIGN_;
+            interCode->u.binop.result = operand;
+            interCode->u.binop.operand = newOperand();
+            interCode->u.binop.operand->kind = CONSTANT;
+            interCode->u.binop.operand->u.value = 0;
+            //printf("ASS in Exp andnotor1, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
 
-            insertLink(ic);
+            insertLink(interCode);
 
             translateCond(node, label1, label2);
 
-            ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label1);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label1);
+            insertLink(interCode);
 
-            ic = newInterCode();
-            ic->kind = ASSIGN_IC;
-            ic->u.binop.result = operand;
-            ic->u.binop.operand = newOperand();
-            ic->u.binop.operand->kind = CONSTANT;
-            ic->u.binop.operand->u.value = 1;
-            //printf("ASS in Exp andnotor2, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
+            interCode = newInterCode();
+            interCode->kind = ASSIGN_;
+            interCode->u.binop.result = operand;
+            interCode->u.binop.operand = newOperand();
+            interCode->u.binop.operand->kind = CONSTANT;
+            interCode->u.binop.operand->u.value = 1;
+            //printf("ASS in Exp andnotor2, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
 
-            insertLink(ic);
+            insertLink(interCode);
 
-            ic = newInterCode();
-            ic->kind = LABEL_IC;
-            ic->u.label.name = strdup(label2);
-            insertLink(ic);
+            interCode = newInterCode();
+            interCode->kind = LABEL_;
+            interCode->u.label.name = strdup(label2);
+            insertLink(interCode);
 
             free(label1);
             free(label2);
@@ -826,9 +678,6 @@ void translateExp(Node* node, Operand* operand)
             Node* n = node->children[0]->children[0];
 
             for(; strcmp(n->name,"ID") != 0; n = n->children[0]);
-
-            //printf("Before not found%s\n", n->value);
-            //printTable();
 
             Unit it = get_unit(n->value);
 
@@ -856,29 +705,29 @@ void translateExp(Node* node, Operand* operand)
         translateExp(node->children[1], t1);
 
         //MINUS
-        InterCode* ic = newInterCode();
-        ic->kind = MINUS_IC;
-        ic->u.triop.result = operand;
-        ic->u.triop.operand1 = newOperand();
-        ic->u.triop.operand1->kind = CONSTANT;
-        ic->u.triop.operand1->u.value = 0;
-        ic->u.triop.operand2 = t1;
-        insertLink(ic);
+        InterCode* interCode = newInterCode();
+        interCode->kind = MINUS_;
+        interCode->u.triop.result = operand;
+        interCode->u.triop.operand1 = newOperand();
+        interCode->u.triop.operand1->kind = CONSTANT;
+        interCode->u.triop.operand1->u.value = 0;
+        interCode->u.triop.operand2 = t1;
+        insertLink(interCode);
     }
     else if (strcmp(node->children[0]->name, "ID") == 0)
     {
         ////printf("In ID\n");
         if (node->children_num == 1)
         {
-            InterCode* ic = newInterCode();
-            ic->kind = ASSIGN_IC;
-            ic->u.binop.result = operand;
-            ic->u.binop.operand = newOperand();
-            ic->u.binop.operand->kind = VARIABLE;
-            ic->u.binop.operand->u.name = strdup(node->children[0]->value);
-            //printf("ASS in Exp ID, %d, %d\n", ic->u.binop.result->kind, ic->u.binop.operand->kind);
+            InterCode* interCode = newInterCode();
+            interCode->kind = ASSIGN_;
+            interCode->u.binop.result = operand;
+            interCode->u.binop.operand = newOperand();
+            interCode->u.binop.operand->kind = VARIABLE;
+            interCode->u.binop.operand->u.name = strdup(node->children[0]->value);
+            //printf("ASS in Exp ID, %d, %d\n", interCode->u.binop.result->kind, interCode->u.binop.operand->kind);
 
-            insertLink(ic);
+            insertLink(interCode);
         }
         else if (node->children_num == 4)
         {
@@ -894,10 +743,10 @@ void translateExp(Node* node, Operand* operand)
             if (strcmp(node->children[0]->value, "write") == 0)
             {
                 //printf("I'm writing...\n");
-                InterCode* ic = newInterCode();
-                ic->kind = WRITE_IC;
-                ic->u.write.operand = args[0];
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = WRITE_;
+                interCode->u.write.operand = args[0];
+                insertLink(interCode);
             }
             else
             {
@@ -906,26 +755,17 @@ void translateExp(Node* node, Operand* operand)
                 for (j = 0; args[j] != 0; j++);
                 for (i = j - 1; i >= 0; i--)
                 {
-                    InterCode* ic = newInterCode();
-                    ic->kind = ARG_IC;
-                    ic->u.arg.operand = args[i];
-                    insertLink(ic);
+                    InterCode* interCode = newInterCode();
+                    interCode->kind = ARG_;
+                    interCode->u.arg.operand = args[i];
+                    insertLink(interCode);
                 }
 
-                //int i = 0;
-                //for (i = 0; args[i] != 0; i++)
-                //{
-                //	InterCode* ic = newInterCode();
-                //	ic->kind = ARG_IC;
-                //	ic->u.arg.operand = args[i];
-                //	insertLink(ic);
-                //}
-
-                InterCode* ic = newInterCode();
-                ic->kind = CALLFUNC_IC;
-                ic->u.call.operand = operand;
-                ic->u.call.name = strdup(node->children[0]->value);
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = CALLFUNC_;
+                interCode->u.call.operand = operand;
+                interCode->u.call.name = strdup(node->children[0]->value);
+                insertLink(interCode);
             }
 
         }
@@ -937,36 +777,35 @@ void translateExp(Node* node, Operand* operand)
             if (strcmp(node->children[0]->value, "read") == 0)
             {
                 //printf("I'm reading...\n");
-                InterCode* ic = newInterCode();
-                ic->kind = READ_IC;
-                ic->u.read.operand = operand;
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = READ_;
+                interCode->u.read.operand = operand;
+                insertLink(interCode);
             }
             else
             {
-                InterCode* ic = newInterCode();
-                ic->kind = CALLFUNC_IC;
-                ic->u.call.operand = operand;
-                ic->u.call.name = strdup(node->children[0]->value);
-                insertLink(ic);
+                InterCode* interCode = newInterCode();
+                interCode->kind = CALLFUNC_;
+                interCode->u.call.operand = operand;
+                interCode->u.call.name = strdup(node->children[0]->value);
+                insertLink(interCode);
             }
         }
 
     }
     else if(strcmp(node->children[0]->name, "INT") == 0)
     {
-        //printf("Should be here\n");
+        // printf("Should be here\n");
         operand->kind = CONSTANT;
         operand->u.value = strtol(node->children[0]->value, 0, 10);
         //printf("----%d\n", operand->u.value);
-        //printf("woo\n");
     }
     else
     {
         printf("%s\n", node->children[0]->name);
-        //Do nothing.
+        // Do nothing.
     }
-    //printf("exp over\n");
+    // printf("exp over\n");
     return;
 
 }
@@ -988,9 +827,153 @@ void translateArgs(Node* node, Operand** args)
     return;
 }
 
-void printInFile(string filename)
+void translateArray(Node* node, Type type, Type tp, Operand* last, Operand* temp)
 {
-    FILE* file = fopen(filename, "w");
+    Node* q = node->children[0];
+    Type t;
+    int tpSize = 1;
+    for(t=tp->u.array.elem; t->u.array.elem!=0; t=t->u.array.elem)
+        tpSize *= t->u.array.size;
+
+    Operand* t1 = newVar();
+    translateExp(node->children[2], t1);
+
+    InterCode* interCode = newInterCode();
+    interCode->kind = MUL_;
+    interCode->u.triop.result = t1;
+    interCode->u.triop.operand1 = newOperand();
+    interCode->u.triop.operand1->kind = CONSTANT;
+    interCode->u.triop.operand1->u.value = 4;
+    interCode->u.triop.operand2 = t1;
+    insertLink(interCode);
+
+    if (tpSize > 1)
+    {
+        // printf("Array here...\n");
+        interCode = newInterCode();
+        interCode->kind = MUL_;
+        interCode->u.triop.result = t1;
+        interCode->u.triop.operand1 = newOperand();
+        interCode->u.triop.operand1->kind = CONSTANT;
+        interCode->u.triop.operand1->u.value = tpSize;
+        interCode->u.triop.operand2 = t1;
+        insertLink(interCode);
+    }
+
+    if (last != 0)
+    {
+        interCode = newInterCode();
+        interCode->kind = ADD_;
+        interCode->u.triop.result = t1;
+        interCode->u.triop.operand1 = t1;
+        interCode->u.triop.operand2 = last;
+        insertLink(interCode);
+    }
+
+    if (strcmp(q->children[0]->name, "ID") == 0)
+    {
+        interCode = newInterCode();
+        interCode->kind = ADD_;
+        interCode->u.triop.result = temp;
+        interCode->u.triop.operand1 = newOperand();
+        interCode->u.triop.operand1->kind = ARRAY_;
+        interCode->u.triop.operand1->u.name = strdup(q->children[0]->value);
+        interCode->u.triop.operand2 = t1;
+        insertLink(interCode);
+    }
+    else
+    {
+        //Find previous
+        for(t=type; t->u.array.elem!=tp; t=t->u.array.elem);
+        translateArray(q,type,t,t1,temp);
+    }
+}
+
+void translateCond(Node* node, string labelTrue, string labelFalse)
+{
+    //node is Exp.
+    //printf("In COND\n");
+    assert(strcmp(node->name, "Exp") == 0);
+
+    if (strcmp(node->children[1]->name, "RELOP") == 0)
+    {
+        //printf("Here am I\n");
+        Operand* t1 = newVar();
+        Operand* t2 = newVar();
+        translateExp(node->children[0], t1);
+        translateExp(node->children[2], t2);
+
+        InterCode* interCode = newInterCode();
+        interCode->kind = COND_;
+        interCode->u.cond.operand1 = t1;
+        interCode->u.cond.operand2 = t2;
+        interCode->u.cond.op = strdup(node->children[1]->value);
+        interCode->u.cond.name = strdup(labelTrue);
+        insertLink(interCode);
+
+        interCode = newInterCode();
+        interCode->kind = LABEL_GOTO_;
+        interCode->u.label_goto.name = strdup(labelFalse);
+        insertLink(interCode);
+    }
+    else if (strcmp(node->children[0]->name, "NOT") == 0)
+    {
+        translateCond(node->children[1], labelFalse, labelTrue);
+    }
+    else if (strcmp(node->children[1]->name, "AND") == 0)
+    {
+        string label1 = newLabel();
+
+        translateCond(node->children[0], label1, labelFalse);
+
+        InterCode* interCode = newInterCode();
+        interCode->kind = LABEL_;
+        interCode->u.label.name = strdup(label1);
+        insertLink(interCode);
+
+        translateCond(node->children[2], labelTrue, labelFalse);
+        free(label1);
+    }
+    else if (strcmp(node->children[1]->name, "OR") == 0)
+    {
+        string label1 = newLabel();
+
+        translateCond(node->children[0], labelTrue, label1);
+
+        InterCode* interCode = newInterCode();
+        interCode->kind = LABEL_;
+        interCode->u.label.name = strdup(label1);
+        insertLink(interCode);
+
+        translateCond(node->children[2], labelTrue, labelFalse);
+        free(label1);
+    }
+    else
+    {
+        Operand* t1 = newVar();
+        translateExp(node, t1);
+
+        InterCode* interCode = newInterCode();
+        interCode->kind = COND_;
+        interCode->u.cond.operand1 = t1;
+        interCode->u.cond.operand2 = newOperand();
+        interCode->u.cond.operand2->kind = CONSTANT;
+        interCode->u.cond.operand2->u.value = 0;
+        interCode->u.cond.op = strdup("!=");
+        interCode->u.cond.name = strdup(labelTrue);
+        insertLink(interCode);
+
+        interCode = newInterCode();
+        interCode->kind = LABEL_GOTO_;
+        interCode->u.label_goto.name = strdup(labelFalse);
+        insertLink(interCode);
+    }
+    return;
+}
+
+void outputFile(string fileName)
+{
+    FILE* file = fopen(fileName, "w");
     if (file != NULL)
     {
         InterCodes* lic = head;
@@ -1006,196 +989,196 @@ void printInFile(string filename)
     fclose(file);
 }
 
-void generateCode(FILE* f, InterCode* ic)
+void generateCode(FILE* f, InterCode* interCode)
 {
-    //printf("Writing a code  %d\n", ic->kind);
-    switch(ic->kind)
+    //printf("Writing a code  %d\n", interCode->kind);
+    switch(interCode->kind)
     {
-    case FUNCTION_IC:
-        fprintf(f, "FUNCTION %s :\n", ic->u.function.name);
+    case FUNCTION_:
+        fprintf(f, "FUNCTION %s :\n", interCode->u.function.name);
         break;
-    case PARAM_IC:
-        fprintf(f, "PARAM %s\n", ic->u.param.name);
+    case PARAM_:
+        fprintf(f, "PARAM %s\n", interCode->u.param.name);
         break;
-    case LABEL_IC:
-        fprintf(f, "LABEL %s :\n", ic->u.label.name);
+    case LABEL_:
+        fprintf(f, "LABEL %s :\n", interCode->u.label.name);
         break;
-    case LABEL_GOTO_IC:
-        fprintf(f, "GOTO %s\n", ic->u.label_goto.name);
+    case LABEL_GOTO_:
+        fprintf(f, "GOTO %s\n", interCode->u.label_goto.name);
         break;
-    case CALLFUNC_IC:
-        fprintf(f, "%s := CALL %s\n", ic->u.call.operand->u.name, ic->u.call.name);
+    case CALLFUNC_:
+        fprintf(f, "%s := CALL %s\n", interCode->u.call.operand->u.name, interCode->u.call.name);
         break;
-    case RETURN_IC:
-        if(ic->u.ret.operand->kind == CONSTANT)
-            fprintf(f, "RETURN #%d\n", ic->u.ret.operand->u.value);
+    case RETURN_:
+        if(interCode->u.ret.operand->kind == CONSTANT)
+            fprintf(f, "RETURN #%d\n", interCode->u.ret.operand->u.value);
         else
-            fprintf(f, "RETURN %s\n", ic->u.ret.operand->u.name);
+            fprintf(f, "RETURN %s\n", interCode->u.ret.operand->u.name);
         break;
-    case WRITE_IC:
-        //printf("I'm in writing ic, %d\n", ic->u.write.operand->kind);
-        if(ic->u.write.operand->kind == CONSTANT)
-            fprintf(f, "WRITE #%d\n",ic->u.write.operand->u.value);
+    case WRITE_:
+        //printf("I'm in writing interCode, %d\n", interCode->u.write.operand->kind);
+        if(interCode->u.write.operand->kind == CONSTANT)
+            fprintf(f, "WRITE #%d\n",interCode->u.write.operand->u.value);
         else
-            fprintf(f, "WRITE %s\n",ic->u.write.operand->u.name);
+            fprintf(f, "WRITE %s\n",interCode->u.write.operand->u.name);
         break;
-    case READ_IC:
-        fprintf(f, "READ %s\n",ic->u.read.operand->u.name);
+    case READ_:
+        fprintf(f, "READ %s\n",interCode->u.read.operand->u.name);
         break;
-    case ARG_IC:
-        if(ic->u.arg.operand->kind==CONSTANT)
-            fprintf(f,"ARG #%d\n",ic->u.arg.operand->u.value);
+    case ARG_:
+        if(interCode->u.arg.operand->kind==CONSTANT)
+            fprintf(f,"ARG #%d\n",interCode->u.arg.operand->u.value);
         else
-            fprintf(f,"ARG %s\n",ic->u.arg.operand->u.name);
+            fprintf(f,"ARG %s\n",interCode->u.arg.operand->u.name);
         break;
-    case DEC_IC:
-        fprintf(f, "DEC %s %d\n", ic->u.dec.operand->u.name, ic->u.dec.size);
+    case DEC_:
+        fprintf(f, "DEC %s %d\n", interCode->u.dec.operand->u.name, interCode->u.dec.size);
         break;
-    case COND_IC:
-        if(ic->u.cond.operand1->kind==CONSTANT&&ic->u.cond.operand2->kind==CONSTANT)
-            fprintf(f,"IF #%d %s #%d GOTO %s\n",ic->u.cond.operand1->u.value,\
-                    ic->u.cond.op,ic->u.cond.operand2->u.value,ic->u.cond.name);
-        else if(ic->u.cond.operand1->kind == CONSTANT)
-            fprintf(f,"IF #%d %s %s GOTO %s\n",ic->u.cond.operand1->u.value,\
-                    ic->u.cond.op,ic->u.cond.operand2->u.value,ic->u.cond.name);
-        else if(ic->u.cond.operand2->kind == CONSTANT)
-            fprintf(f,"IF %s %s #%d GOTO %s\n",ic->u.cond.operand1->u.value,\
-                    ic->u.cond.op,ic->u.cond.operand2->u.value,ic->u.cond.name);
+    case COND_:
+        if(interCode->u.cond.operand1->kind==CONSTANT&&interCode->u.cond.operand2->kind==CONSTANT)
+            fprintf(f,"IF #%d %s #%d GOTO %s\n",interCode->u.cond.operand1->u.value,\
+                    interCode->u.cond.op,interCode->u.cond.operand2->u.value,interCode->u.cond.name);
+        else if(interCode->u.cond.operand1->kind == CONSTANT)
+            fprintf(f,"IF #%d %s %s GOTO %s\n",interCode->u.cond.operand1->u.value,\
+                    interCode->u.cond.op,interCode->u.cond.operand2->u.value,interCode->u.cond.name);
+        else if(interCode->u.cond.operand2->kind == CONSTANT)
+            fprintf(f,"IF %s %s #%d GOTO %s\n",interCode->u.cond.operand1->u.value,\
+                    interCode->u.cond.op,interCode->u.cond.operand2->u.value,interCode->u.cond.name);
         else
-            fprintf(f,"IF %s %s %s GOTO %s\n",ic->u.cond.operand1->u.value,\
-                    ic->u.cond.op,ic->u.cond.operand2->u.value,ic->u.cond.name);
+            fprintf(f,"IF %s %s %s GOTO %s\n",interCode->u.cond.operand1->u.value,\
+                    interCode->u.cond.op,interCode->u.cond.operand2->u.value,interCode->u.cond.name);
         break;
-    case MINUS_IC:
-        //printf("I'm in minus ic... %d   %d  \n", ic->u.triop.operand1->kind, ic->u.triop.operand2->kind);
-        if(ic->u.triop.operand1->kind==CONSTANT&&ic->u.triop.operand2->kind==CONSTANT)
+    case MINUS_:
+        //printf("I'm in minus interCode... %d   %d  \n", interCode->u.triop.operand1->kind, interCode->u.triop.operand2->kind);
+        if(interCode->u.triop.operand1->kind==CONSTANT&&interCode->u.triop.operand2->kind==CONSTANT)
         {
             //printf("WAHAHA\n");
-            fprintf(f,"%s := #%d - #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := #%d - #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.value);
         }
-        else if(ic->u.triop.operand1->kind==CONSTANT)
+        else if(interCode->u.triop.operand1->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d - %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := #%d - %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.name);
         }
-        else if(ic->u.triop.operand2->kind==CONSTANT)
+        else if(interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := %s - %d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := %s - %d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.value);
         }
         else
         {
-            fprintf(f,"%s := %s - %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := %s - %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.name);
         }
         break;
-    case ADD_IC:
-        if(ic->u.triop.operand1->kind==CONSTANT&&ic->u.triop.operand2->kind==CONSTANT)
+    case ADD_:
+        if(interCode->u.triop.operand1->kind==CONSTANT&&interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d + #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := #%d + #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.value);
         }
-        else if(ic->u.triop.operand1->kind==CONSTANT)
+        else if(interCode->u.triop.operand1->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d + %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := #%d + %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.name);
         }
-        else if(ic->u.triop.operand2->kind==CONSTANT)
+        else if(interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := %s + #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := %s + #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.value);
         }
         else
         {
-            fprintf(f,"%s := %s + %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := %s + %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.name);
         }
         break;
-    case SUB_IC:
-        if(ic->u.triop.operand1->kind==CONSTANT&&ic->u.triop.operand2->kind==CONSTANT)
+    case SUB_:
+        if(interCode->u.triop.operand1->kind==CONSTANT&&interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d - #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := #%d - #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.value);
         }
-        else if(ic->u.triop.operand1->kind==CONSTANT)
+        else if(interCode->u.triop.operand1->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d - %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := #%d - %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.name);
         }
-        else if(ic->u.triop.operand2->kind==CONSTANT)
+        else if(interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := %s - #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := %s - #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.value);
         }
         else
         {
-            fprintf(f,"%s := %s - %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := %s - %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.name);
         }
         break;
-    case MUL_IC:
-        if(ic->u.triop.operand1->kind==CONSTANT&&ic->u.triop.operand2->kind==CONSTANT)
+    case MUL_:
+        if(interCode->u.triop.operand1->kind==CONSTANT&&interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d * #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := #%d * #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.value);
         }
-        else if(ic->u.triop.operand1->kind==CONSTANT)
+        else if(interCode->u.triop.operand1->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d * %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := #%d * %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.name);
         }
-        else if(ic->u.triop.operand2->kind==CONSTANT)
+        else if(interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := %s * #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := %s * #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.value);
         }
         else
         {
-            fprintf(f,"%s := %s * %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := %s * %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.name);
         }
         break;
-    case DIV_IC:
-        if(ic->u.triop.operand1->kind==CONSTANT&&ic->u.triop.operand2->kind==CONSTANT)
+    case DIV_:
+        if(interCode->u.triop.operand1->kind==CONSTANT&&interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d / #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := #%d / #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.value);
         }
-        else if(ic->u.triop.operand1->kind==CONSTANT)
+        else if(interCode->u.triop.operand1->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d / %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.value,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := #%d / %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.value,interCode->u.triop.operand2->u.name);
         }
-        else if(ic->u.triop.operand2->kind==CONSTANT)
+        else if(interCode->u.triop.operand2->kind==CONSTANT)
         {
-            fprintf(f,"%s := %s / #%d\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.value);
+            fprintf(f,"%s := %s / #%d\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.value);
         }
         else
         {
-            fprintf(f,"%s := %s / %s\n",ic->u.triop.result->u.name,\
-                    ic->u.triop.operand1->u.name,ic->u.triop.operand2->u.name);
+            fprintf(f,"%s := %s / %s\n",interCode->u.triop.result->u.name,\
+                    interCode->u.triop.operand1->u.name,interCode->u.triop.operand2->u.name);
         }
         break;
-    case ASSIGN_IC:
+    case ASSIGN_:
         //printf("HERE\n");
-        if(ic->u.binop.operand->kind==CONSTANT)
+        if(interCode->u.binop.operand->kind==CONSTANT)
         {
-            fprintf(f,"%s := #%d\n",ic->u.binop.result->u.name,\
-                    ic->u.binop.operand->u.value);
+            fprintf(f,"%s := #%d\n",interCode->u.binop.result->u.name,\
+                    interCode->u.binop.operand->u.value);
         }
         else
         {
 
-            //printf("%dvvv%s\n", ic->u.binop.operand->kind, ic->u.binop.result->u.name);
+            //printf("%dvvv%s\n", interCode->u.binop.operand->kind, interCode->u.binop.result->u.name);
             //printf("HERE\n");
-            //printf("sss%s\n", ic->u.binop.operand->u.name);
-            fprintf(f,"%s := %s\n",ic->u.binop.result->u.name,\
-                    ic->u.binop.operand->u.name);
+            //printf("sss%s\n", interCode->u.binop.operand->u.name);
+            fprintf(f,"%s := %s\n",interCode->u.binop.result->u.name,\
+                    interCode->u.binop.operand->u.name);
         }
         break;
     default:
-        printf("Wrong kind: %d\n", ic->kind);
+        printf("Wrong kind: %d\n", interCode->kind);
         break;
     }
 }

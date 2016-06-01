@@ -2,12 +2,13 @@
 # clang can make more useful error message than gcc.
 # use gcc for submit and test.
 CC		= gcc
-#CC		= clang
+# CC		= clang
 SCRIPT	= ./script
 SRC		= ./src
 INCLUDE = ./include
 BIN		= ./bin
 PARSER	= ./bin/parser
+OUTPUT	= ./output
 
 all:
 	flex -o $(SRC)/lex.yy.c $(SCRIPT)/lexical.l
@@ -31,3 +32,4 @@ test:
 clean:
 	rm $(SRC)/lex.yy.c $(SRC)/syntax.tab.c $(INCLUDE)/syntax.tab.h -f
 	rm $(BIN)/parser -f
+	rm $(OUTPUT)/*.ir -f

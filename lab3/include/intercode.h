@@ -26,24 +26,25 @@ struct InterCode
 {
     enum
     {
-        ASSIGN_IC,
-        ADD_IC,
-        SUB_IC,
-        MUL_IC,
-        DIV_IC,
-        MINUS_IC,
-        RETURN_IC,
-        LABEL_IC,
-        LABEL_GOTO_IC,
-        READ_IC,
-        WRITE_IC,
-        CALLFUNC_IC,
-        FUNCTION_IC,
-        ARG_IC,
-        PARAM_IC,
-        REFASSIGN_IC,
-        DEC_IC,
-        COND_IC
+		// use _ to prevent the enum conflicts	
+        ASSIGN_,
+        ADD_,
+        SUB_,
+        MUL_,
+        DIV_,
+        MINUS_,
+        RETURN_,
+        LABEL_,
+        LABEL_GOTO_,
+        READ_,
+        WRITE_,
+        CALLFUNC_,
+        FUNCTION_,
+        ARG_,
+        PARAM_,
+        REFASSIGN_,
+        DEC_,
+        COND_
     } kind;
 
     union
@@ -130,36 +131,40 @@ typedef struct InterCodes InterCodes;
 int getTypeSize(Type type);
 // link a node in the double linked list.
 InterCodes* linkNode(InterCodes* interCodes1, InterCodes* interCodes2);
-void generateCode(FILE* file, InterCode* interCode);
-void printInFile(string fileName);
+string newLabel();
+Operand* newOperand();
+Operand* newVar();
+InterCode* newInterCode();
+InterCodes* insertLink(InterCode *interCode);
 
-void translateCond(Node* node, string, string);
-//Function.
+void translateArray(Node* node, Type type, Type tp, Operand* last, Operand* temp);
+
+// translate functions
 void translateProgram(struct Node* node);
 void translateExtDefList(struct Node* node);
 void translateExtDef(struct Node* node);
 void translateExtDecList(struct Node* node);
-
 int translateSpecifier(struct Node* node);
 void translateStructSpecifier(struct Node* node);
 void translateOptTag(struct Node* node);
 void translateTag(struct Node* node);
-
 string translateVarDec(struct Node* node, int size);
 void translateFunDec(struct Node* node);
+void translateArgs(struct Node* node, Operand** args);
 void translateVarList(struct Node* node);
 void translateParamDec(struct Node* node);
-
 void translateCompSt(struct Node* node);
 void translateStmtList(struct Node* node);
 void translateStmt(struct Node* node);
-
 void translateDefList(struct Node* node);
 void translateDef(struct Node* node);
 void translateDecList(struct Node* node, int size);
 void translateDec(struct Node* node, int size);
-
 void translateExp(struct Node* node, Operand* operand);
-void translateArgs(struct Node* node, Operand** args);
+void translateCond(Node* node, string, string);
+
+// generateCode and output to file
+void generateCode(FILE* file, InterCode* interCode);
+void outputFile(string fileName);
 
 #endif
