@@ -20,19 +20,19 @@ void init()
 
     type_float.kind = BASIC;
     type_float.u.basic = TYPE_FLOAT;
-    
+
     // read function
     Unit _read = (Unit)malloc(sizeof(Unit_));
     strcpy(_read->name, "read");
-	_read->kind = 4;
-    
+    _read->kind = 4;
+
     // write function
     Unit _write = (Unit)malloc(sizeof(Unit_));
     strcpy(_write->name, "write");
-	_write->kind = 4;
+    _write->kind = 4;
 
-	insert_hash_table(_write);
-	insert_hash_table(_read);
+    insert_hash_table(_write);
+    insert_hash_table(_read);
 }
 
 uint32_t hash_pjw(char* name)
